@@ -1,0 +1,48 @@
+plugins {
+    id 'java'
+    id 'io.quarkus'
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
+    implementation 'io.quarkus:quarkus-hibernate-orm-panache'
+    implementation 'io.quarkus:quarkus-jdbc-mariadb'
+    implementation 'io.quarkus:quarkus-resteasy-jackson'
+    implementation 'io.quarkus:quarkus-arc'
+    implementation 'io.quarkus:quarkus-resteasy'
+    implementation 'io.quarkus:quarkus-smallrye-openapi'
+    implementation 'io.quarkus:quarkus-smallrye-jwt'
+    implementation 'io.quarkus:quarkus-smallrye-jwt-build'
+    implementation 'io.quarkus:quarkus-security-jpa'
+    testImplementation 'io.quarkus:quarkus-junit5'
+}
+
+group 'io.github.markusjx'
+version '1.0.0-SNAPSHOT'
+
+quarkusBuild {
+    nativeArgs {
+        containerBuild = false
+        buildImage = "quay.io/quarkus/ubi-quarkus-native-image:20.3.0-java11"
+        dumpProxies = true
+    }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+compileJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << '-parameters'
+}
+
+compileTestJava {
+    options.encoding = 'UTF-8'
+}
