@@ -20,6 +20,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import java.util.stream.Collectors;
 
 @Path("/api/v1/sensor")
 @RequestScoped
@@ -79,6 +80,18 @@ public class SensorController {
     })
     public Response getNumSensors() {
         return Response.ok(repo.numSensors()).build();
+    }
+
+    @GET
+    @Path("list")
+    @Operation(summary = "List all registered sensors")
+    @APIResponses(value = {
+            @APIResponse(responseCode = "200", description = "The registered sensors", content = @Content(
+                    schema = @Schema(implementation = Sensor[].class, description = "The sensors")
+            ))
+    })
+    public Response listSensors() {
+        return Response.ok(repo.findAll().stream().collect(Collectors.toList())).build();
     }
 
     @DELETE

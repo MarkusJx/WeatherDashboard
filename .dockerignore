@@ -1,5 +1,8 @@
-*
 !build/*-runner
 !build/*-runner.jar
 !build/lib/*
 !build/quarkus-app/*
+build
+node_modules
+node
+!src/main/resources/META-INF/resources

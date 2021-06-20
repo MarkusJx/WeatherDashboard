@@ -2,6 +2,7 @@ package io.github.markusjx.api.v1;
 
 import io.github.markusjx.repositories.SensorDataRepo;
 import io.github.markusjx.repositories.SensorRepo;
+import io.github.markusjx.types.Unit;
 import io.github.markusjx.types.dto.SensorDataDTO;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.ParameterIn;
@@ -106,6 +107,9 @@ public class SensorDataController {
                     description = "The id of the sensor to get the data from",
                     schema = @Schema(implementation = Long.class, description = "The sensor's id", example = "1")
             ),
+            @Parameter(name = "unit", in = ParameterIn.QUERY, description = "The unit to fetch", required = true,
+                    schema = @Schema(implementation = String.class, description = "The unit", example = "temperature")
+            ),
             @Parameter(name = "limit", in = ParameterIn.QUERY, description = "The max number of values to get",
                     schema = @Schema(implementation = Integer.class, description = "The number of values",
                             example = "10")
@@ -115,14 +119,16 @@ public class SensorDataController {
             )
     })
     public Response getData(@PathParam("id") Long id,
+                            @QueryParam("unit") String unit,
                             @DefaultValue("-1") @QueryParam("limit") int limit,
                             @DefaultValue("-1") @QueryParam("offset") int offset) {
-        var sensor = sensorRepo.findByIdOptional(id);
+        final var sensor = sensorRepo.findByIdOptional(id);
         if (sensor.isEmpty()) {
             return Response.status(404, "The sensor doesn't exist").build();
         }
 
-        List<SensorDataDTO> data = dataRepo.getDataForSensor(sensor.get(), limit, offset)
+        final var unitVal = Unit.valueOf(unit.toUpperCase());
+        List<SensorDataDTO> data = dataRepo.getDataForSensor(sensor.get(), unitVal, limit, offset)
                 .stream()
                 .map(SensorDataDTO::fromData)
                 .collect(Collectors.toList());
