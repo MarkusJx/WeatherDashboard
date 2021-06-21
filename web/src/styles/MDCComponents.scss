@@ -1,0 +1,34 @@
+@use "node_modules/@material/floating-label/mdc-floating-label";
+@use "node_modules/@material/line-ripple/mdc-line-ripple";
+@use "node_modules/@material/notched-outline/mdc-notched-outline";
+@use "node_modules/@material/textfield";
+@use "node_modules/@material/button";
+@use "node_modules/@material/button/button" as btn;
+@use "node_modules/@material/linear-progress";
+@use "node_modules/@material/checkbox";
+@use "node_modules/@material/form-field";
+@use "node_modules/@material/snackbar/mdc-snackbar";
+
+@import "./variables.scss";
+
+@include textfield.core-styles;
+
+@include btn.core-styles;
+
+@include linear-progress.core-styles;
+
+@include checkbox.core-styles;
+@include form-field.core-styles;
+
+.mdc-text-field--outlined {
+  @include textfield.focused-outline-color($textFieldColor);
+
+  &.mdc-text-field--focused {
+    @include textfield.label-color($textFieldColor);
+    @include textfield.caret-color($textFieldColor)
+  }
+}
+
+.custom-snackbar {
+  --mdc-theme-primary: #{$textFieldColor};
+}

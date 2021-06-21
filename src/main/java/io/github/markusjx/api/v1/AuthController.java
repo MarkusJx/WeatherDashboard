@@ -17,6 +17,8 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.RequestScoped;
@@ -29,22 +31,58 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
+/**
+ * A controller for authentication
+ */
 @Path("/api/v1/auth")
 @RequestScoped
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @SecurityScheme(bearerFormat = "jwt", securitySchemeName = "jwt", type = SecuritySchemeType.HTTP, scheme = "bearer")
 public class AuthController implements Serializable {
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
+    /**
+     * The authentication cookie name
+     */
     private static final String AUTH_COOKIE = "authentication";
+
+    /**
+     * The session cookie name
+     */
     private static final String SES_COOKIE = "session";
+
+    /**
+     * The issuer name
+     */
     private static final String ISSUER = "web_weather";
+
+    /**
+     * The sensor repository
+     */
     @Inject
     SensorRepo sensorRepo;
+
+    /**
+     * The user repository
+     */
     @Inject
     UserRepo userRepo;
+
+    /**
+     * The json web token parser
+     */
     @Inject
     JWTParser parser;
 
+    /**
+     * Refresh all tokens for a user
+     * Requires the session or persistent cookie to be set.
+     *
+     * @param session the session cookie
+     * @param persistent the persistent cookie
+     * @return the response data
+     */
     @POST
     @Path("refreshTokens")
     @Produces(MediaType.TEXT_PLAIN)
@@ -129,6 +167,7 @@ public class AuthController implements Serializable {
             return Response.status(400, "A sensor with that id doesn't exist").build();
         }
 
+        logger.info("Generating token for sensor '{}' by user '{}'", data.sensorId, ctx.getUserPrincipal().getName());
         var builder = Jwt.issuer(ISSUER)
                 .issuedAt(Instant.now())
                 .groups("sensor")
@@ -244,6 +283,8 @@ public class AuthController implements Serializable {
         }
 
         userRepo.addUser(user);
+        logger.info("Registering user with email '{}', first name '{}', last name '{}' and id '{}'",
+                user.getEmail(), user.getFirstName(), user.getLastName(), user.getId());
         return Response.noContent().build();
     }
 

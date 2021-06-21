@@ -1,7 +1,7 @@
 import React from "react";
 import {CartesianGrid, Line, LineChart, Tooltip, XAxis} from "recharts";
-import Config from "./Config";
-import Util from "./Util";
+import Config from "./util/Config";
+import Util from "./util/Util";
 
 export interface SensorDataProps {
     sensorId: number
@@ -29,8 +29,6 @@ export default class SensorData extends React.Component<SensorDataProps, SensorD
         this.state = {
             data: null
         };
-
-        this.fetchData().then();
     }
 
     public render(): React.ReactNode {
@@ -43,6 +41,10 @@ export default class SensorData extends React.Component<SensorDataProps, SensorD
                 <SensorDataChart data={this.state.data}/>
             );
         }
+    }
+
+    public componentDidMount(): void {
+        this.fetchData().then();
     }
 
     private fetchSensorData(unit: Unit): Promise<SensorDataDTO[]> {
@@ -59,7 +61,7 @@ export default class SensorData extends React.Component<SensorDataProps, SensorD
 
         temperatures.forEach(t => data[t.timestamp] = {temperature: t.value, humidity: 0});
         humidityValues.forEach(h => {
-            if (data[h.timestamp] == undefined) {
+            if (data[h.timestamp] === undefined) {
                 data[h.timestamp] = {
                     temperature: 0,
                     humidity: h.value

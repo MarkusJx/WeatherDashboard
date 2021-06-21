@@ -1,0 +1,101 @@
+@import "src/styles/variables";
+@import "src/styles/shared";
+
+.register {
+  margin: auto;
+  display: grid;
+  grid-template-rows: auto auto;
+  border: 1px solid #c5c5c5;
+  border-radius: 5px;
+  overflow: hidden;
+  --mdc-theme-primary: #{$textFieldColor};
+  max-width: 500px;
+
+  .slide_container {
+    display: grid;
+    grid-template-columns: 100% 100% 100%;
+    position: relative;
+    left: -100%;
+
+    .register_form {
+      display: grid;
+      grid-template-rows: auto auto auto;
+      row-gap: 20px;
+      padding: 20px;
+
+      .first_last_name_container {
+        display: grid;
+        grid-template-columns: auto auto;
+        column-gap: 20px;
+      }
+
+      #register_button {
+        width: max-content;
+        margin: auto;
+        --mdc-theme-primary: #{$textFieldColor};
+      }
+    }
+
+    .register_registered {
+      display: grid;
+      color: #1d1d1d;
+      grid-template-rows: min-content min-content min-content;
+      margin: auto;
+
+      p {
+        text-align: center;
+        font-size: 1.2em;
+        margin: 0 10px;
+      }
+    }
+
+    .register_failed {
+      display: grid;
+      color: #1d1d1d;
+      grid-template-rows: min-content min-content min-content;
+      row-gap: 20px;
+      margin: auto;
+
+      p {
+        text-align: center;
+        font-size: 1.2em;
+        margin: 0 10px;
+      }
+    }
+
+    .heading {
+      text-align: center;
+      font-weight: 400;
+      margin: 0;
+      color: #1d1d1d;
+    }
+
+    &.left {
+      left: 0;
+
+      @include inline-animation(.5s) {
+        0% {
+          left: -100%;
+        }
+
+        100% {
+          left: 0;
+        }
+      }
+    }
+
+    &.right {
+      left: -200%;
+
+      @include inline-animation(.5s) {
+        0% {
+          left: -100;
+        }
+
+        100% {
+          left: -200%;
+        }
+      }
+    }
+  }
+}
