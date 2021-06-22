@@ -1,6 +1,7 @@
 import React from "react";
 
 import "../../styles/MDCComponents.scss";
+import styles from "../../styles/MDCComponents.module.scss";
 
 import {MDCTextField} from "@material/textfield";
 import {MDCRipple} from "@material/ripple";
@@ -8,19 +9,62 @@ import {MDCLinearProgress} from "@material/linear-progress";
 import {MDCCheckbox} from "@material/checkbox";
 import {MDCSnackbar} from '@material/snackbar';
 
-interface OutlinedTextFieldProps {
-    id: string;
-    labelId: string;
-    type?: string;
-    minLength?: number;
-    required?: boolean;
-    name?: string;
+import {MdVisibility} from "react-icons/md";
+
+/**
+ * Any ye olde text field
+ */
+export interface ITextField {
+    /**
+     * Get the underlying mdc text field element
+     *
+     * @return the mdc text field instance
+     */
+    get textField(): MDCTextField;
+
+    /**
+     * Get the text field input element
+     *
+     * @return the input element
+     */
+    get input(): HTMLInputElement;
 }
 
-export class OutlinedTextField extends React.Component<OutlinedTextFieldProps> {
-    public textField: MDCTextField | null = null;
-    public input: HTMLInputElement | null = null;
+/**
+ * Properties for a outlined text field
+ */
+interface OutlinedTextFieldProps extends PasswordOutlinedTextFieldProps {
+    // The text field type
+    type?: string;
+}
+
+/**
+ * A outlined text field
+ */
+export class OutlinedTextField extends React.Component<OutlinedTextFieldProps> implements ITextField {
+    /**
+     * The html text field element
+     * @private
+     */
     private element: HTMLElement | null = null;
+
+    /**
+     * The mdc text field instance
+     */
+    public _textField: MDCTextField | null = null;
+
+    public get textField(): MDCTextField {
+        return this._textField!;
+    }
+
+    /**
+     * The text field input element
+     */
+    public _input: HTMLInputElement | null = null;
+
+    public get input(): HTMLInputElement {
+        return this._input!;
+    }
 
     public render() {
         return (
@@ -36,27 +80,134 @@ export class OutlinedTextField extends React.Component<OutlinedTextFieldProps> {
                 </span>
                 <input type={this.props.type ? this.props.type : "text"} className="mdc-text-field__input"
                        minLength={this.props.minLength} aria-labelledby={this.props.labelId}
-                       required={this.props.required === true} name={this.props.name} ref={e => this.input = e}/>
+                       maxLength={this.props.maxLength} required={this.props.required === true}
+                       name={this.props.name} ref={e => this._input = e}/>
             </label>
         );
     }
 
     public componentDidMount(): void {
-        if (this.element != null) {
-            this.textField = new MDCTextField(this.element);
-        }
+        this._textField = new MDCTextField(this.element!);
     }
 }
 
+interface PasswordOutlinedTextFieldProps {
+    // The text field id
+    id: string;
+    // The text field label id
+    labelId: string;
+    // The text field min length
+    minLength?: number;
+    // The text field max length
+    maxLength?: number;
+    // Whether this field is required
+    required?: boolean;
+    // The text field name
+    name?: string;
+}
+
+/**
+ * A outlined password text field
+ */
+export class PasswordOutlinedTextField extends React.Component<PasswordOutlinedTextFieldProps> implements ITextField {
+    /**
+     * The html text field element
+     * @private
+     */
+    private element: HTMLElement | null = null;
+
+    /**
+     * The visibility icon container element
+     * @private
+     */
+    private iconContainer: HTMLSpanElement | null = null;
+
+    /**
+     * The mdc text field instance
+     */
+    private _textField: MDCTextField | null = null;
+
+    public get textField(): MDCTextField {
+        return this._textField!;
+    }
+
+    /**
+     * The text field input element
+     */
+    private _input: HTMLInputElement | null = null;
+
+    public get input(): HTMLInputElement {
+        return this._input!;
+    }
+
+    public render() {
+        return (
+            <label className="mdc-text-field mdc-text-field--outlined mdc-text-field--with-trailing-icon"
+                   ref={e => this.element = e} id={this.props.id}>
+                <span className="mdc-notched-outline">
+                    <span className="mdc-notched-outline__leading"/>
+                    <span className="mdc-notched-outline__notch">
+                        <span className="mdc-floating-label" id={this.props.labelId}>
+                            {this.props.children}
+                        </span>
+                    </span>
+                    <span className="mdc-notched-outline__trailing"/>
+                </span>
+                <input type="password" className="mdc-text-field__input" maxLength={this.props.maxLength}
+                       minLength={this.props.minLength} aria-labelledby={this.props.labelId}
+                       required={this.props.required === true} name={this.props.name} ref={e => this._input = e}/>
+                <span className={styles.password_text_field_icon_container} ref={e => this.iconContainer = e}>
+                    <MdVisibility size="24px"/>
+                </span>
+            </label>
+        );
+    }
+
+    public componentDidMount(): void {
+        this._textField = new MDCTextField(this.element!);
+
+        this.iconContainer!.addEventListener('mousedown', () => {
+            this.input.type = "text";
+        });
+
+        this.iconContainer!.addEventListener('mouseup', () => {
+            this.input.type = "password";
+        });
+    }
+}
+
+/**
+ * A button
+ */
+export interface IButton {
+    /**
+     * Get the button html element
+     *
+     * @return the element
+     */
+    get button(): HTMLButtonElement;
+}
+
+/**
+ * Properties for a text button
+ */
 interface TextButtonProps {
+    // The button id
     id?: string;
 }
 
-export class TextButton extends React.Component<TextButtonProps, {}> {
+/**
+ * A text button
+ */
+export class TextButton extends React.Component<TextButtonProps> implements IButton {
+    /**
+     * The button element
+     * @private
+     */
     private element: HTMLButtonElement | null = null;
 
     public get button(): HTMLButtonElement {
-        return this.element as HTMLButtonElement;
+        return this.element!;
     }
 
     public render() {
@@ -75,9 +226,29 @@ export class TextButton extends React.Component<TextButtonProps, {}> {
     }
 }
 
-export class LinearProgress extends React.Component<any, any> {
+/**
+ * A linear progress bar
+ */
+export class LinearProgress extends React.Component {
+    /**
+     * The progress bar html element
+     */
     public element: HTMLDivElement | null = null;
+
+    /**
+     * The mdc linear progress instance
+     * @private
+     */
     private _progressBar: MDCLinearProgress | null = null;
+
+    /**
+     * Get the mdc linear progress instance
+     *
+     * @return the instance
+     */
+    public get progressBar(): MDCLinearProgress {
+        return this._progressBar!;
+    }
 
     public render() {
         return (
@@ -98,17 +269,34 @@ export class LinearProgress extends React.Component<any, any> {
     }
 
     public componentDidMount(): void {
-        this._progressBar = new MDCLinearProgress(this.element as HTMLDivElement);
-    }
-
-    public get progressBar(): MDCLinearProgress {
-        return this._progressBar as MDCLinearProgress;
+        this._progressBar = new MDCLinearProgress(this.element!);
     }
 }
 
-export class Checkbox extends React.Component<any, any> {
-    private _checkbox: MDCCheckbox | null = null;
+/**
+ * A mdc checkbox
+ */
+export class Checkbox extends React.Component {
+    /**
+     * The checkbox html element
+     * @private
+     */
     private element: HTMLElement | null = null;
+
+    /**
+     * The mdc checkbox instance
+     * @private
+     */
+    private _checkbox: MDCCheckbox | null = null;
+
+    /**
+     * Get the mdc checkbox instance
+     *
+     * @return the instance
+     */
+    public get checkbox(): MDCCheckbox {
+        return this._checkbox!;
+    }
 
     public render(): React.ReactNode {
         return (
@@ -133,17 +321,34 @@ export class Checkbox extends React.Component<any, any> {
     }
 
     public componentDidMount(): void {
-        this._checkbox = new MDCCheckbox(this.element as HTMLElement);
-    }
-
-    public get checkbox(): MDCCheckbox {
-        return this._checkbox as MDCCheckbox;
+        this._checkbox = new MDCCheckbox(this.element!);
     }
 }
 
+/**
+ * A snackbar
+ */
 export class Snackbar extends React.Component {
+    /**
+     * The html snackbar element
+     * @private
+     */
     private element: HTMLElement | null = null;
+
+    /**
+     * The mdc snackbar instance
+     * @private
+     */
     private _snackbar: MDCSnackbar | null = null;
+
+    /**
+     * Get the mdc snackbar instance
+     *
+     * @return the instance
+     */
+    public get snackbar(): MDCSnackbar {
+        return this._snackbar!;
+    }
 
     public render(): React.ReactNode {
         return (
@@ -164,14 +369,13 @@ export class Snackbar extends React.Component {
     }
 
     public componentDidMount(): void {
-        this._snackbar = new MDCSnackbar(this.element as HTMLElement);
+        this._snackbar = new MDCSnackbar(this.element!);
     }
 
+    /**
+     * Open the snackbar
+     */
     public open(): void {
         this.snackbar.open();
-    }
-
-    public get snackbar(): MDCSnackbar {
-        return this._snackbar as MDCSnackbar;
     }
 }

@@ -79,11 +79,11 @@ public class AuthController implements Serializable {
      * Refresh all tokens for a user
      * Requires the session or persistent cookie to be set.
      *
-     * @param session the session cookie
+     * @param session    the session cookie
      * @param persistent the persistent cookie
      * @return the response data
      */
-    @POST
+    @GET
     @Path("refreshTokens")
     @Produces(MediaType.TEXT_PLAIN)
     @Operation(description = "Refresh all tokens")

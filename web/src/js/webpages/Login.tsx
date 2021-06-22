@@ -1,25 +1,28 @@
 import React from "react";
 
 import styles from "../../styles/webpages/Login.module.scss";
-import {Checkbox, OutlinedTextField, Snackbar, TextButton} from "../util/MDCComponents";
-import Config from "../util/Config";
+import {
+    Checkbox,
+    ITextField,
+    OutlinedTextField,
+    PasswordOutlinedTextField,
+    Snackbar,
+    TextButton
+} from "../util/MDCComponents";
 import Credentials from "../util/Credentials";
-
-interface AuthUserDTO {
-    email: string;
-    password: string;
-    keepSignedIn: boolean;
-}
+import {AuthUserDTO} from "../apiV1/DataTransferObjects";
+import IAuth from "../apiV1/IAuth";
 
 interface LoginProps {
     history: string[];
 }
 
 export default class Login extends React.Component<LoginProps> {
-    private emailTextField: OutlinedTextField | null = null;
-    private passwordTextField: OutlinedTextField | null = null;
+    private emailTextField: ITextField | null = null;
+    private passwordTextField: ITextField | null = null;
     private checkbox: Checkbox | null = null;
     private snackbar: Snackbar | null = null;
+    private loginButton: TextButton | null = null;
 
     public constructor(props: LoginProps) {
         super(props);
@@ -36,16 +39,16 @@ export default class Login extends React.Component<LoginProps> {
                                        name="email">
                         Email
                     </OutlinedTextField>
-                    <OutlinedTextField id={"login-pass-text-field"} labelId={"login-pass-text-field-label"}
+                    <PasswordOutlinedTextField id={"login-pass-text-field"} labelId={"login-pass-text-field-label"}
                                        required={true} minLength={8} ref={e => this.passwordTextField = e}
-                                       type="password" name="password">
+                                       name="password">
                         Password
-                    </OutlinedTextField>
+                    </PasswordOutlinedTextField>
                     <div className={styles.keep_signed_in_container}>
                         <span>Keep signed in:</span>
                         <Checkbox ref={e => this.checkbox = e}/>
                     </div>
-                    <TextButton id={styles.login_button}>
+                    <TextButton id={styles.login_button} ref={e => this.loginButton = e}>
                         Login
                     </TextButton>
                 </form>
@@ -56,8 +59,8 @@ export default class Login extends React.Component<LoginProps> {
         );
     }
 
-    public componentDidMount(): void {
-        if (Credentials.isSignedIn()) {
+    public async componentDidMount(): Promise<void> {
+        if (await Credentials.isSignedIn()) {
             this.props.history.push('/');
         } else {
             document.title = "Login";
@@ -67,24 +70,19 @@ export default class Login extends React.Component<LoginProps> {
     private onClick(event: any): boolean {
         event.preventDefault();
         const data: AuthUserDTO = {
-            email: this.emailTextField?.textField?.value as string,
-            password: this.passwordTextField?.textField?.value as string,
-            keepSignedIn: this.checkbox?.checkbox?.checked as boolean
+            email: this.emailTextField!.textField.value,
+            password: this.passwordTextField!.textField.value,
+            keepSignedIn: this.checkbox!.checkbox.checked
         };
 
-        fetch(`${Config.SERVER_URL}/api/v1/auth/authUser`, {
-            method: 'POST',
-            body: JSON.stringify(data),
-            headers: new Headers({'Content-Type': 'application/json'})
-        }).then(r => {
-            if (r.ok) {
-                r.text().then(Credentials.signIn).then(() => {
-                    this.props.history.push('/');
-                });
-            } else {
-                this.snackbar?.open();
-            }
-        });
+        this.loginButton!.button.disabled = true;
+        IAuth.getInstance().loginUser(data)
+            .then(Credentials.signIn)
+            .then(() => this.props.history.push('/'))
+            .catch(() => {
+                this.snackbar!.open();
+                this.loginButton!.button.disabled = false;
+            });
 
         return false;
     }

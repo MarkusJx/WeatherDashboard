@@ -1,31 +1,31 @@
 import React from "react";
 
-import {LinearProgress, OutlinedTextField, TextButton} from "../util/MDCComponents";
-import Config from "../util/Config";
+import {
+    ITextField,
+    LinearProgress,
+    OutlinedTextField,
+    PasswordOutlinedTextField,
+    TextButton
+} from "../util/MDCComponents";
 import {Checkmark} from "../components/MiscComponents";
 import {Link} from "react-router-dom";
 
 import styles from "../../styles/webpages/Register.module.scss";
 import navbarStyles from "../../styles/components/Navbar.module.scss";
 import Credentials from "../util/Credentials";
-
-interface UserDTO {
-    firstName: string;
-    lastName: string;
-    email: string;
-    password: string;
-}
+import {UserDTO} from "../apiV1/DataTransferObjects";
+import IAuth from "../apiV1/IAuth";
 
 interface RegisterProps {
     history: string[];
 }
 
 export default class Register extends React.Component<RegisterProps> {
-    private emailTextField: OutlinedTextField | null = null;
-    private firstNameTextField: OutlinedTextField | null = null;
-    private lastNameTextField: OutlinedTextField | null = null;
-    private passwordTextField: OutlinedTextField | null = null;
-    private repeatPasswordTextField: OutlinedTextField | null = null;
+    private emailTextField: ITextField | null = null;
+    private firstNameTextField: ITextField | null = null;
+    private lastNameTextField: ITextField | null = null;
+    private passwordTextField: ITextField | null = null;
+    private repeatPasswordTextField: ITextField | null = null;
     private registerButton: TextButton | null = null;
 
     private progressBar: LinearProgress | null = null;
@@ -70,16 +70,16 @@ export default class Register extends React.Component<RegisterProps> {
                                 Last name
                             </OutlinedTextField>
                         </div>
-                        <OutlinedTextField id="password-text-field" labelId="password-text-field-label" type="password"
-                                           minLength={8} required={true} ref={e => this.passwordTextField = e}
-                                           name="password">
+                        <PasswordOutlinedTextField id="password-text-field" labelId="password-text-field-label"
+                                                   minLength={8} required={true} ref={e => this.passwordTextField = e}
+                                                   name="password">
                             Password
-                        </OutlinedTextField>
-                        <OutlinedTextField id="repeat-password-text-field" labelId="repeat-password-text-field-label"
-                                           type="password" name="repeat-password"
-                                           minLength={8} required={true} ref={e => this.repeatPasswordTextField = e}>
+                        </PasswordOutlinedTextField>
+                        <PasswordOutlinedTextField id="repeat-password-text-field" minLength={8} required={true}
+                                                   labelId="repeat-password-text-field-label" name="repeat-password"
+                                                   ref={e => this.repeatPasswordTextField = e}>
                             Repeat password
-                        </OutlinedTextField>
+                        </PasswordOutlinedTextField>
 
                         <TextButton ref={e => this.registerButton = e} id={styles.register_button}>
                             Register
@@ -102,63 +102,61 @@ export default class Register extends React.Component<RegisterProps> {
         );
     }
 
-    public componentDidMount(): void {
-        if (Credentials.isSignedIn()) {
+    public async componentDidMount(): Promise<void> {
+        if (await Credentials.isSignedIn()) {
             this.props.history.push('/');
             return;
         }
 
         document.title = "Register";
-        (this.progressBar as LinearProgress).progressBar.progress = 0;
+        this.progressBar!.progressBar.progress = 0;
 
         const validatePassword = () => {
             if (this.passwordTextField?.textField?.value !== this.repeatPasswordTextField?.textField?.value) {
-                (this.repeatPasswordTextField?.input as HTMLInputElement).setCustomValidity("Passwords Don't Match");
+                this.repeatPasswordTextField!.input!.setCustomValidity("Passwords Don't Match");
             } else {
-                (this.repeatPasswordTextField?.input as HTMLInputElement).setCustomValidity('');
+                this.repeatPasswordTextField!.input!.setCustomValidity('');
             }
         }
 
-        (this.passwordTextField?.input as HTMLInputElement).onchange = validatePassword;
-        (this.repeatPasswordTextField?.input as HTMLInputElement).onchange = validatePassword;
+        this.passwordTextField!.input!.onchange = validatePassword;
+        this.repeatPasswordTextField!.input!.onchange = validatePassword;
     }
 
     private onClick(event: any): boolean {
         event.preventDefault();
-        (this.registerButton?.button as HTMLButtonElement).disabled = true;
-        (this.progressBar as LinearProgress).progressBar.determinate = false;
+        this.registerButton!.button.disabled = true;
+        this.progressBar!.progressBar.determinate = false;
 
         const data: UserDTO = {
-            firstName: this.firstNameTextField?.textField?.value as string,
-            lastName: this.lastNameTextField?.textField?.value as string,
-            email: this.emailTextField?.textField?.value as string,
-            password: this.passwordTextField?.textField?.value as string
+            firstName: this.firstNameTextField!.textField!.value,
+            lastName: this.lastNameTextField!.textField!.value,
+            email: this.emailTextField!.textField!.value,
+            password: this.passwordTextField!.textField!.value
         };
 
-        fetch(`${Config.SERVER_URL}/api/v1/auth/registerUser`, {
-            method: 'POST',
-            body: JSON.stringify(data),
-            headers: new Headers({'content-type': 'application/json'})
-        }).then(r => {
-            (this.progressBar as LinearProgress).progressBar.determinate = true;
+        const before = () => {
+            this.progressBar!.progressBar.determinate = true;
             setTimeout(() => {
-                this.checkmark?.animate();
-                (this.progressBar as LinearProgress).progressBar.progress = 1;
+                this.checkmark!.animate();
+                this.progressBar!.progressBar.progress = 1;
             }, 250);
+        };
 
-            if (r.ok) {
-                this.slideContainer?.classList?.add(styles.right);
-            } else {
+        IAuth.getInstance().registerUser(data)
+            .then(() => {
+                before();
+                this.slideContainer!.classList.add(styles.right);
+                this.registerButton!.button.disabled = false;
+            })
+            .catch(() => {
+                before();
                 setTimeout(() => {
-                    (this.progressBar?.element as HTMLDivElement)
-                        .style
-                        .setProperty("--mdc-theme-primary", "#ff2800");
+                    this.progressBar!.element!.style.setProperty("--mdc-theme-primary", "#ff2800");
                 }, 250);
-                this.slideContainer?.classList?.add(styles.left);
-            }
-
-            (this.registerButton?.button as HTMLButtonElement).disabled = false;
-        });
+                this.slideContainer!.classList.add(styles.left);
+                this.registerButton!.button.disabled = false;
+            });
 
         return false;
     }
