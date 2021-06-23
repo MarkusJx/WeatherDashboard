@@ -1,5 +1,5 @@
-import {AuthUserDTO, UserDTO} from "./DataTransferObjects";
-import AuthV1 from "./AuthV1";
+import {AuthSensorDTO, AuthUserDTO, UserDTO} from "./v1/DataTransferObjects";
+import AuthV1 from "./v1/AuthV1";
 
 /**
  * An abstract class for authentication
@@ -46,4 +46,13 @@ export default abstract class IAuth {
      * Sign out the current user
      */
     public abstract signOut(): Promise<void>;
+
+    /**
+     * Authenticate a sensor
+     *
+     * @param data the sensor authentication data
+     * @param token the jwt token for the current user
+     * @return the generated jwt authentication token
+     */
+    public abstract authSensor(data: AuthSensorDTO, token: string): Promise<string>;
 }

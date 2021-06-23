@@ -1,16 +1,8 @@
+@use "src/styles/shared";
 @import "src/styles/variables";
 
 .login {
-  margin: auto;
-  display: grid;
-  border: 1px solid #c5c5c5;
-  border-radius: 5px;
-  overflow: hidden;
-  --mdc-theme-primary: #{$textFieldColor};
-  max-width: 400px;
-  width: 100%;
-  row-gap: 20px;
-  padding: 20px;
+  @include shared.container-element;
 
   .keep_signed_in_container {
     display: grid;
@@ -25,12 +17,5 @@
   #login_button {
     width: max-content;
     margin: auto;
-  }
-
-  h1 {
-    text-align: center;
-    font-weight: 400;
-    margin: 0;
-    color: #1d1d1d;
   }
 }

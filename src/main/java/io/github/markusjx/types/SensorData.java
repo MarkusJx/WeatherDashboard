@@ -16,12 +16,11 @@ public class SensorData implements Serializable {
     @Column(nullable = false)
     private Instant timestamp;
 
-    @Column(nullable = false)
-    private Integer value;
+    @Column
+    private Float temperature;
 
-    @Id
-    @Column(nullable = false)
-    private Unit unit;
+    @Column
+    private Float humidity;
 
     public Sensor getSensor() {
         return sensor;
@@ -39,20 +38,20 @@ public class SensorData implements Serializable {
         this.timestamp = timestamp;
     }
 
-    public Integer getValue() {
-        return value;
+    public Float getTemperature() {
+        return temperature;
     }
 
-    public void setValue(Integer value) {
-        this.value = value;
+    public void setTemperature(Float temperature) {
+        this.temperature = temperature;
     }
 
-    public Unit getUnit() {
-        return unit;
+    public Float getHumidity() {
+        return humidity;
     }
 
-    public void setUnit(Unit unit) {
-        this.unit = unit;
+    public void setHumidity(Float humidity) {
+        this.humidity = humidity;
     }
 
     @Override
@@ -62,12 +61,12 @@ public class SensorData implements Serializable {
         var that = (SensorData) o;
         return Objects.equals(sensor, that.sensor) &&
                 Objects.equals(timestamp, that.timestamp) &&
-                Objects.equals(value, that.value) &&
-                Objects.equals(unit, that.unit);
+                Objects.equals(temperature, that.temperature) &&
+                Objects.equals(humidity, that.humidity);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(sensor, timestamp, value, unit);
+        return Objects.hash(sensor, timestamp, temperature, humidity);
     }
 }

@@ -8,12 +8,14 @@
 @use "node_modules/@material/checkbox";
 @use "node_modules/@material/form-field";
 @use "node_modules/@material/snackbar/mdc-snackbar";
+@use "node_modules/@material/icon-button";
 
 @import "./variables.scss";
 
 @include textfield.core-styles;
 
 @include btn.core-styles;
+@include icon-button.core-styles;
 
 @include linear-progress.core-styles;
 

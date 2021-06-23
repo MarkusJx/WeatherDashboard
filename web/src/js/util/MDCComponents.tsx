@@ -81,7 +81,7 @@ export class OutlinedTextField extends React.Component<OutlinedTextFieldProps> i
                 <input type={this.props.type ? this.props.type : "text"} className="mdc-text-field__input"
                        minLength={this.props.minLength} aria-labelledby={this.props.labelId}
                        maxLength={this.props.maxLength} required={this.props.required === true}
-                       name={this.props.name} ref={e => this._input = e}/>
+                       name={this.props.name} ref={e => this._input = e} disabled={this.props.disabled}/>
             </label>
         );
     }
@@ -93,9 +93,9 @@ export class OutlinedTextField extends React.Component<OutlinedTextFieldProps> i
 
 interface PasswordOutlinedTextFieldProps {
     // The text field id
-    id: string;
+    id?: string;
     // The text field label id
-    labelId: string;
+    labelId?: string;
     // The text field min length
     minLength?: number;
     // The text field max length
@@ -104,6 +104,8 @@ interface PasswordOutlinedTextFieldProps {
     required?: boolean;
     // The text field name
     name?: string;
+    // Whether the text field is disabled
+    disabled?: boolean;
 }
 
 /**
@@ -155,6 +157,7 @@ export class PasswordOutlinedTextField extends React.Component<PasswordOutlinedT
                 </span>
                 <input type="password" className="mdc-text-field__input" maxLength={this.props.maxLength}
                        minLength={this.props.minLength} aria-labelledby={this.props.labelId}
+                       disabled={this.props.disabled}
                        required={this.props.required === true} name={this.props.name} ref={e => this._input = e}/>
                 <span className={styles.password_text_field_icon_container} ref={e => this.iconContainer = e}>
                     <MdVisibility size="24px"/>
@@ -194,6 +197,8 @@ export interface IButton {
 interface TextButtonProps {
     // The button id
     id?: string;
+    // Whether the button is disabled
+    disabled?: boolean;
 }
 
 /**
@@ -212,7 +217,8 @@ export class TextButton extends React.Component<TextButtonProps> implements IBut
 
     public render() {
         return (
-            <button className="mdc-button" ref={e => this.element = e} id={this.props.id}>
+            <button className="mdc-button" ref={e => this.element = e} id={this.props.id}
+                    disabled={this.props.disabled}>
                 <span className="mdc-button__ripple"/>
                 <span className="mdc-button__label">
                     {this.props.children}
@@ -226,10 +232,14 @@ export class TextButton extends React.Component<TextButtonProps> implements IBut
     }
 }
 
+interface LinearProgressProps {
+    indeterminate?: boolean;
+}
+
 /**
  * A linear progress bar
  */
-export class LinearProgress extends React.Component {
+export class LinearProgress extends React.Component<LinearProgressProps> {
     /**
      * The progress bar html element
      */
@@ -251,9 +261,11 @@ export class LinearProgress extends React.Component {
     }
 
     public render() {
+        const className: string = "mdc-linear-progress" +
+            (this.props.indeterminate === true ? " mdc-linear-progress--indeterminate" : "");
         return (
-            <div role="progressbar" className="mdc-linear-progress" aria-valuemin={0} aria-valuemax={1}
-                 aria-valuenow={0} ref={e => this.element = e}>
+            <div role="progressbar" className={className} aria-valuemin={0} aria-valuemax={1} aria-valuenow={0}
+                 ref={e => this.element = e}>
                 <div className="mdc-linear-progress__buffer">
                     <div className="mdc-linear-progress__buffer-bar"/>
                     <div className="mdc-linear-progress__buffer-dots"/>

@@ -10,8 +10,8 @@ import {
     TextButton
 } from "../util/MDCComponents";
 import Credentials from "../util/Credentials";
-import {AuthUserDTO} from "../apiV1/DataTransferObjects";
-import IAuth from "../apiV1/IAuth";
+import {AuthUserDTO} from "../api/v1/DataTransferObjects";
+import IAuth from "../api/IAuth";
 
 interface LoginProps {
     history: string[];
@@ -32,7 +32,7 @@ export default class Login extends React.Component<LoginProps> {
     public render(): React.ReactNode {
         return (
             <>
-                <form className={styles.login} action="" method="get" onSubmit={this.onClick}>
+                <form className={styles.login} action="" method="post" onSubmit={this.onClick}>
                     <h1>Login</h1>
                     <OutlinedTextField id={"login-email-text-field"} labelId={"login-email-text-field-label"}
                                        required={true} minLength={4} ref={e => this.emailTextField = e} type="email"
@@ -70,9 +70,9 @@ export default class Login extends React.Component<LoginProps> {
     private onClick(event: any): boolean {
         event.preventDefault();
         const data: AuthUserDTO = {
-            email: this.emailTextField!.textField.value,
-            password: this.passwordTextField!.textField.value,
-            keepSignedIn: this.checkbox!.checkbox.checked
+            email: this.emailTextField?.textField?.value!,
+            password: this.passwordTextField?.textField?.value!,
+            keepSignedIn: this.checkbox?.checkbox?.checked!
         };
 
         this.loginButton!.button.disabled = true;

@@ -1,6 +1,7 @@
 import React from "react";
 import {CartesianGrid, Line, LineChart, Tooltip, XAxis} from "recharts";
-import Config from "./util/Config";
+import ISensorData from "./api/ISensorData";
+import {SensorDataDTO} from "./api/v1/DataTransferObjects";
 import Util from "./util/Util";
 
 export interface SensorDataProps {
@@ -11,17 +12,6 @@ interface SensorDataState {
     data: chartData | null;
 }
 
-enum Unit {
-    temperature = "TEMPERATURE",
-    humidity = "HUMIDITY"
-}
-
-interface SensorDataDTO {
-    timestamp: number,
-    unit: Unit,
-    value: number
-}
-
 export default class SensorData extends React.Component<SensorDataProps, SensorDataState> {
     public constructor(props: SensorDataProps) {
         super(props);
@@ -29,6 +19,12 @@ export default class SensorData extends React.Component<SensorDataProps, SensorD
         this.state = {
             data: null
         };
+    }
+
+    private set data(data: chartData) {
+        this.setState({
+            data: data
+        });
     }
 
     public render(): React.ReactNode {
@@ -47,45 +43,24 @@ export default class SensorData extends React.Component<SensorDataProps, SensorD
         this.fetchData().then();
     }
 
-    private fetchSensorData(unit: Unit): Promise<SensorDataDTO[]> {
-        return fetch(`${Config.SERVER_URL}/api/v1/data/get/${this.props.sensorId}?unit=${unit}&limit=${Config.MAX_FETCH_VALUES}`)
-            .then(r => Util.toJson<SensorDataDTO[]>(r));
-    }
-
     private async fetchData(): Promise<void> {
-        const temperatures = await this.fetchSensorData(Unit.temperature);
-        const humidityValues = await this.fetchSensorData(Unit.humidity);
+        const data: SensorDataDTO[] = await ISensorData.getInstance().getData(this.props.sensorId, 50);
 
-        type data_t = {temperature: number, humidity: number};
-        const data: data_t[] = [];
-
-        temperatures.forEach(t => data[t.timestamp] = {temperature: t.value, humidity: 0});
-        humidityValues.forEach(h => {
-            if (data[h.timestamp] === undefined) {
-                data[h.timestamp] = {
-                    temperature: 0,
-                    humidity: h.value
-                };
-            } else {
-                data[h.timestamp] = {
-                    temperature: data[h.timestamp].temperature,
-                    humidity: h.value
-                };
-            }
+        const format = new Intl.DateTimeFormat("UK", {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
         });
 
-        this.data = data.map((value: data_t, index: number) => {
+        const offset = Util.getUtcOffset() * 60;
+        data.reverse();
+        this.data = data.map((value: SensorDataDTO) => {
+            const date = new Date((value.timestamp + offset) * 1000);
             return {
-                name: new Date(index).toDateString(),
+                name: format.format(date),
                 temperature: value.temperature,
                 humidity: value.humidity
             };
-        });
-    }
-
-    private set data(data: chartData) {
-        this.setState({
-            data: data
         });
     }
 }
@@ -103,7 +78,7 @@ interface SensorDataChartProps {
 class SensorDataChart extends React.Component<SensorDataChartProps> {
     public render(): React.ReactNode {
         return (
-            <LineChart width={400} height={400} data={this.props.data}
+            <LineChart width={1200} height={600} data={this.props.data}
                        margin={{top: 5, right: 20, left: 10, bottom: 5}}>
                 <XAxis dataKey="name"/>
                 <Tooltip/>

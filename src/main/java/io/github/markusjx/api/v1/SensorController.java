@@ -65,9 +65,9 @@ public class SensorController {
     public Response add(@Context SecurityContext ctx, SensorDTO s) {
         var sensor = s.toBase();
         repo.addSensor(sensor);
-        logger.info("Registering sensor with id '{}' and name '{}' by user '{}'", sensor.id, sensor.name,
+        logger.info("Registering sensor with id '{}' and name '{}' by user '{}'", sensor.getId(), sensor.getName(),
                 ctx.getUserPrincipal().getName());
-        return Response.ok(sensor.id).build();
+        return Response.ok(sensor.getId()).build();
     }
 
     @GET

@@ -1,0 +1,33 @@
+#auth_dialog_content {
+  display: grid;
+  min-height: 330px;
+  width: 560px;
+  grid-auto-rows: min-content;
+  row-gap: 20px;
+
+  .auth_data_container {
+    display: grid;
+    grid-auto-flow: row;
+
+    span {
+      text-align: center;
+    }
+
+    .auth_data {
+      background: #e4e4e4;
+      padding: 10px;
+      border-radius: 6px;
+      word-break: break-all;
+
+      -webkit-user-select: all;
+      -moz-user-select: all;
+      -ms-user-select: all;
+      user-select: all;
+    }
+  }
+
+  button {
+    width: max-content;
+    margin: auto;
+  }
+}

@@ -1,6 +1,6 @@
-import IAuth from "./IAuth";
-import {AuthUserDTO, UserDTO} from "./DataTransferObjects";
-import Config from "../util/Config";
+import IAuth from "../IAuth";
+import {AuthSensorDTO, AuthUserDTO, UserDTO} from "./DataTransferObjects";
+import Config from "../../util/Config";
 
 /**
  * The authentication strategies for the api version 1
@@ -51,5 +51,16 @@ export default class AuthV1 implements IAuth {
         return fetch(`${Config.SERVER_URL}/api/v1/auth/logout`, {
             method: 'GET'
         }).catch().then();
+    }
+
+    public async authSensor(data: AuthSensorDTO, token: string): Promise<string> {
+        return fetch(`${Config.SERVER_URL}/api/v1/auth/authSensor`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: new Headers({
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            })
+        }).then(AuthV1.getText);
     }
 }

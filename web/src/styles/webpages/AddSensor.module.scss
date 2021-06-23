@@ -1,0 +1,17 @@
+@use "src/styles/shared";
+
+.create_sensor {
+  @include shared.container-element;
+  padding: 0;
+
+  .form {
+    display: grid;
+    padding: 0 20px 20px 20px;
+    row-gap: 20px;
+  }
+
+  #submit_button {
+    width: max-content;
+    margin: auto;
+  }
+}

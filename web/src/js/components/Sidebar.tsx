@@ -1,7 +1,7 @@
 import React from "react";
 import {Menu, MenuItem, ProSidebar, SidebarContent, SidebarFooter, SidebarHeader, SubMenu} from 'react-pro-sidebar';
 import {Link} from "react-router-dom";
-import {FaHome} from "react-icons/fa";
+import {FaHome, FaTemperatureHigh} from "react-icons/fa";
 import {IoLogInOutline, IoLogOutOutline} from "react-icons/io5";
 import {AiOutlineEdit} from "react-icons/ai";
 
@@ -37,10 +37,7 @@ export default class Sidebar extends React.Component<{}, SidebarState> {
                             Home
                             <Link to="/"/>
                         </MenuItem>
-                        <SubMenu title="Components">
-                            <MenuItem>Component 1</MenuItem>
-                            <MenuItem>Component 2</MenuItem>
-                        </SubMenu>
+                        {this.getMainElements()}
                     </Menu>
                 </SidebarContent>
                 <SidebarFooter>
@@ -81,6 +78,34 @@ export default class Sidebar extends React.Component<{}, SidebarState> {
                         <Link to="/register"/>
                     </MenuItem>
                 </>
+            );
+        }
+    }
+
+    private getMainElements(): React.ReactNode {
+        if (this.state.isSignedIn) {
+            return (
+                <SubMenu title="Sensors" icon={<FaTemperatureHigh/>}>
+                    <MenuItem>
+                        Add sensor
+                        <Link to="/addSensor"/>
+                    </MenuItem>
+                    <MenuItem>
+                        View sensors
+                        <Link to="/viewSensors"/>
+                    </MenuItem>
+                    <MenuItem>
+                        Generate sensor config
+                        <Link to="/generateConfig"/>
+                    </MenuItem>
+                </SubMenu>
+            );
+        } else {
+            return (
+                <MenuItem icon={<FaTemperatureHigh/>}>
+                    View sensors
+                    <Link to="/viewSensors"/>
+                </MenuItem>
             );
         }
     }

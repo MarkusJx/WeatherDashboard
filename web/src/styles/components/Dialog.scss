@@ -1,0 +1,12 @@
+@use "node_modules/@material/dialog";
+@import "src/styles/variables";
+
+@include dialog.core-styles;
+
+.mdc-dialog--open, .mdc-dialog--opening, .mdc-dialog--closing {
+  z-index: 9999;
+}
+
+.custom-dialog {
+  --mdc-theme-primary: #{$textFieldColor};
+}

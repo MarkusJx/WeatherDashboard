@@ -1,0 +1,13 @@
+.date_picker_container {
+  display: grid;
+  grid-auto-flow: column;
+  height: max-content;
+  grid-template-columns: max-content min-content;
+  column-gap: 5px;
+  margin: auto;
+
+  .expiration_text {
+    margin: auto;
+    text-align: left;
+  }
+}

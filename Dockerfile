@@ -3,6 +3,7 @@ COPY src /usr/src/app/src
 COPY build.gradle /usr/src/app
 COPY settings.gradle /usr/src/app
 COPY gradle.properties /usr/src/app
+COPY web /usr/src/app
 USER root
 RUN chown -R quarkus /usr/src/app
 USER quarkus

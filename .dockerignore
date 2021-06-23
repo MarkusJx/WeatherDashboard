@@ -3,6 +3,7 @@
 !build/lib/*
 !build/quarkus-app/*
 build
-node_modules
+web/node_modules
+web/build
 node
 !src/main/resources/META-INF/resources

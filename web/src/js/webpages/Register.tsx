@@ -13,8 +13,8 @@ import {Link} from "react-router-dom";
 import styles from "../../styles/webpages/Register.module.scss";
 import navbarStyles from "../../styles/components/Navbar.module.scss";
 import Credentials from "../util/Credentials";
-import {UserDTO} from "../apiV1/DataTransferObjects";
-import IAuth from "../apiV1/IAuth";
+import {UserDTO} from "../api/v1/DataTransferObjects";
+import IAuth from "../api/IAuth";
 
 interface RegisterProps {
     history: string[];
@@ -50,7 +50,7 @@ export default class Register extends React.Component<RegisterProps> {
                         </p>
                     </div>
 
-                    <form className={styles.register_form} action="" method="get" onSubmit={this.onClick}>
+                    <form className={styles.register_form} action="" method="post" onSubmit={this.onClick}>
                         <h1 className={styles.heading}>Register a new account</h1>
 
                         <OutlinedTextField id="email-text-field" labelId="email-text-field-label" type="email"
@@ -129,10 +129,10 @@ export default class Register extends React.Component<RegisterProps> {
         this.progressBar!.progressBar.determinate = false;
 
         const data: UserDTO = {
-            firstName: this.firstNameTextField!.textField!.value,
-            lastName: this.lastNameTextField!.textField!.value,
-            email: this.emailTextField!.textField!.value,
-            password: this.passwordTextField!.textField!.value
+            firstName: this.firstNameTextField?.textField?.value!,
+            lastName: this.lastNameTextField?.textField?.value!,
+            email: this.emailTextField?.textField?.value!,
+            password: this.passwordTextField?.textField?.value!
         };
 
         const before = () => {

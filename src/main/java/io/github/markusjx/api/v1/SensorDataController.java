@@ -2,7 +2,6 @@ package io.github.markusjx.api.v1;
 
 import io.github.markusjx.repositories.SensorDataRepo;
 import io.github.markusjx.repositories.SensorRepo;
-import io.github.markusjx.types.Unit;
 import io.github.markusjx.types.dto.SensorDataDTO;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.ParameterIn;
@@ -13,6 +12,8 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameters;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -34,6 +35,8 @@ import java.util.stream.Collectors;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class SensorDataController {
+    private static final Logger logger = LoggerFactory.getLogger(SensorDataController.class);
+
     /**
      * The sensor data repository
      */
@@ -70,7 +73,7 @@ public class SensorDataController {
 
         var sensor = sensorRepo.getSensorById(id);
         if (sensor != null) {
-            if (!sensor.name.equals(name)) {
+            if (!sensor.getName().equals(name)) {
                 return Response.status(400, "The jwt was invalid").build();
             }
 
@@ -107,19 +110,15 @@ public class SensorDataController {
                     description = "The id of the sensor to get the data from",
                     schema = @Schema(implementation = Long.class, description = "The sensor's id", example = "1")
             ),
-            @Parameter(name = "unit", in = ParameterIn.QUERY, description = "The unit to fetch", required = true,
-                    schema = @Schema(implementation = String.class, description = "The unit", example = "temperature")
-            ),
             @Parameter(name = "limit", in = ParameterIn.QUERY, description = "The max number of values to get",
                     schema = @Schema(implementation = Integer.class, description = "The number of values",
                             example = "10")
             ),
             @Parameter(name = "offset", in = ParameterIn.QUERY, description = "The offset in temperatures to get",
-                    schema = @Schema(implementation = Integer.class, description = "The offset", example = "10")
+                    schema = @Schema(implementation = Integer.class, description = "The offset", example = "0")
             )
     })
     public Response getData(@PathParam("id") Long id,
-                            @QueryParam("unit") String unit,
                             @DefaultValue("-1") @QueryParam("limit") int limit,
                             @DefaultValue("-1") @QueryParam("offset") int offset) {
         final var sensor = sensorRepo.findByIdOptional(id);
@@ -127,8 +126,8 @@ public class SensorDataController {
             return Response.status(404, "The sensor doesn't exist").build();
         }
 
-        final var unitVal = Unit.valueOf(unit.toUpperCase());
-        List<SensorDataDTO> data = dataRepo.getDataForSensor(sensor.get(), unitVal, limit, offset)
+        logger.debug("Saving data for sensor with id '{}'", id);
+        List<SensorDataDTO> data = dataRepo.getDataForSensor(sensor.get(), limit, offset)
                 .stream()
                 .map(SensorDataDTO::fromData)
                 .collect(Collectors.toList());

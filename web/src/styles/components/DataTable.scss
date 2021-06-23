@@ -1,0 +1,8 @@
+@use "node_modules/@material/data-table/data-table";
+@use "node_modules/@material/data-table" as data-table-theme;
+@use "node_modules/@material/data-table/data-table" as table;
+@use "node_modules/@material/checkbox";
+
+@include checkbox.core-styles;
+@include data-table.core-styles;
+@include data-table.theme-baseline;

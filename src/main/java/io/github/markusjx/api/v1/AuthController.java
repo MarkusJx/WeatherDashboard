@@ -171,11 +171,14 @@ public class AuthController implements Serializable {
         var builder = Jwt.issuer(ISSUER)
                 .issuedAt(Instant.now())
                 .groups("sensor")
-                .upn(sensor.name)
+                .upn(sensor.getName())
                 .subject(data.sensorId.toString());
 
         if (data.expiration != null) {
             builder.expiresAt(data.expiration);
+        } else {
+            // Expires in a gazillion years
+            builder.expiresAt(Instant.MAX);
         }
 
         return Response.ok(builder.sign()).build();

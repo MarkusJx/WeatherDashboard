@@ -1,4 +1,4 @@
-import IAuth from "../apiV1/IAuth";
+import IAuth from "../api/IAuth";
 
 const {isJwtExpired} = require('jwt-check-expiration');
 
@@ -98,6 +98,20 @@ export default class Credentials {
     }
 
     /**
+     * Refresh the jwt authentication token
+     */
+    public static async refreshToken(): Promise<void> {
+        if ((this.getToken() == null || isJwtExpired(this.getToken()!)) && Credentials.getSignedIn() !== false) {
+            try {
+                const token = await IAuth.getInstance().refreshToken();
+                return Credentials.signIn(token);
+            } catch (ignored) {
+                return Credentials.signOut(false);
+            }
+        }
+    }
+
+    /**
      * Call the login/logout change listeners
      *
      * @param signedIn whether a user was signed in
@@ -107,21 +121,6 @@ export default class Credentials {
         Credentials.changeListeners.forEach((listener: ChangeListener) => {
             listener(signedIn);
         });
-    }
-
-    /**
-     * Refresh the jwt authentication token
-     * @private
-     */
-    private static async refreshToken(): Promise<void> {
-        if ((this.getToken() == null || isJwtExpired(this.getToken()!)) && Credentials.getSignedIn() !== false) {
-            try {
-                const token = await IAuth.getInstance().refreshToken();
-                return Credentials.signIn(token);
-            } catch (ignored) {
-                return Credentials.signOut(false);
-            }
-        }
     }
 
     /**
