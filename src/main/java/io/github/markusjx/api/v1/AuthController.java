@@ -4,6 +4,7 @@ import io.github.markusjx.repositories.SensorRepo;
 import io.github.markusjx.repositories.UserRepo;
 import io.github.markusjx.types.dto.AuthSensorDTO;
 import io.github.markusjx.types.dto.AuthUserDTO;
+import io.github.markusjx.types.dto.ErrorDTO;
 import io.github.markusjx.types.dto.UserDTO;
 import io.smallrye.jwt.auth.principal.JWTParser;
 import io.smallrye.jwt.auth.principal.ParseException;
@@ -91,9 +92,11 @@ public class AuthController implements Serializable {
             @APIResponse(responseCode = "200", description = "The operation was successful", content = @Content(
                     schema = @Schema(implementation = String.class, description = "The new auth token")
             )),
-            @APIResponse(responseCode = "400", description = "The request was invalid", content = @Content),
+            @APIResponse(responseCode = "400", description = "The request was invalid", content = @Content(
+                    schema = @Schema(implementation = ErrorDTO.class)
+            )),
             @APIResponse(responseCode = "401", description = "The user is not authorized to access this",
-                    content = @Content)
+                    content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     public Response refreshTokens(@CookieParam(SES_COOKIE) String session, @CookieParam(AUTH_COOKIE) String persistent) {
         JsonWebToken sessionToken = null;
@@ -116,7 +119,8 @@ public class AuthController implements Serializable {
 
         if (persistentToken == null && sessionToken == null) {
             return Response
-                    .status(401, "No cookies are set")
+                    .status(401)
+                    .entity(ErrorDTO.from(401, "No cookies are set"))
                     .cookie(removeCookie(SES_COOKIE))
                     .cookie(removeCookie(AUTH_COOKIE))
                     .build();
@@ -124,7 +128,8 @@ public class AuthController implements Serializable {
 
         if (persistentToken != null && sessionToken != null && !persistentToken.getSubject().equals(sessionToken.getSubject())) {
             return Response
-                    .status(400, "The subjects did not match")
+                    .status(400)
+                    .entity(ErrorDTO.from(400, "The subjects did not match"))
                     .cookie(removeCookie(SES_COOKIE))
                     .cookie(removeCookie(AUTH_COOKIE))
                     .build();
@@ -134,7 +139,8 @@ public class AuthController implements Serializable {
         var user = userRepo.findByEmail(email);
         if (user.isEmpty()) {
             return Response
-                    .status(401, "The user doesn't exist")
+                    .status(401)
+                    .entity(ErrorDTO.from(401, "The user doesn't exist"))
                     .cookie(removeCookie(SES_COOKIE))
                     .cookie(removeCookie(AUTH_COOKIE))
                     .build();
@@ -152,19 +158,25 @@ public class AuthController implements Serializable {
             @APIResponse(responseCode = "200", description = "The operation was successful", content = @Content(
                     schema = @Schema(implementation = String.class)
             )),
-            @APIResponse(responseCode = "400", description = "The request was invalid", content = @Content),
+            @APIResponse(responseCode = "400", description = "The request was invalid", content = @Content(
+                    schema = @Schema(implementation = ErrorDTO.class)
+            )),
             @APIResponse(responseCode = "401", description = "The user is not authorized to access this",
-                    content = @Content)
+                    content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     @SecurityRequirement(name = "jwt")
     public Response getSensorToken(@Context SecurityContext ctx, AuthSensorDTO data) {
         if (data.sensorId == null) {
-            return Response.status(400, "The 'sensorId' parameter must not be null").build();
+            return Response.status(400)
+                    .entity(ErrorDTO.from(400, "The 'sensorId' parameter must not be null"))
+                    .build();
         }
 
         var sensor = sensorRepo.getSensorById(data.sensorId);
         if (sensor == null) {
-            return Response.status(400, "A sensor with that id doesn't exist").build();
+            return Response.status(400)
+                    .entity(ErrorDTO.from(400, "A sensor with that id doesn't exist"))
+                    .build();
         }
 
         logger.info("Generating token for sensor '{}' by user '{}'", data.sensorId, ctx.getUserPrincipal().getName());
@@ -172,7 +184,8 @@ public class AuthController implements Serializable {
                 .issuedAt(Instant.now())
                 .groups("sensor")
                 .upn(sensor.getName())
-                .subject(data.sensorId.toString());
+                .subject(data.sensorId.toString())
+                .claim("acr", sensor.getUUID().toString());
 
         if (data.expiration != null) {
             builder.expiresAt(data.expiration);
@@ -247,22 +260,32 @@ public class AuthController implements Serializable {
             @APIResponse(responseCode = "200", description = "The user was signed in", content = @Content(
                     schema = @Schema(implementation = String.class)
             )),
-            @APIResponse(responseCode = "400", description = "The request was invalid", content = @Content),
-            @APIResponse(responseCode = "401", description = "The user's email/password was invalid", content = @Content)
+            @APIResponse(responseCode = "400", description = "The request was invalid", content = @Content(
+                    schema = @Schema(implementation = ErrorDTO.class)
+            )),
+            @APIResponse(responseCode = "401", description = "The user's email/password was invalid", content = @Content(
+                    schema = @Schema(implementation = ErrorDTO.class)
+            ))
     })
     public Response authUser(AuthUserDTO user) throws GeneralSecurityException {
         if (user.email == null || user.password == null) {
-            return Response.status(400, "The email or password was null").build();
+            return Response.status(400)
+                    .entity(ErrorDTO.from(400, "The email or password was null"))
+                    .build();
         }
 
         var userOptional = userRepo.findByEmail(user.email);
         if (userOptional.isEmpty()) {
-            return Response.status(401, "Invalid credentials").build();
+            return Response.status(401)
+                    .entity(ErrorDTO.from(401, "Invalid credentials"))
+                    .build();
         }
 
         var u = userOptional.get();
         if (!u.verifyPassword(user.password)) {
-            return Response.status(401, "Invalid credentials").build();
+            return Response.status(401)
+                    .entity(ErrorDTO.from(401, "Invalid credentials"))
+                    .build();
         } else {
             return generateTokens(user.email, u.getRole(), user.keepSignedIn);
         }
@@ -273,16 +296,22 @@ public class AuthController implements Serializable {
     @Operation(description = "Register a new user")
     @APIResponses(value = {
             @APIResponse(responseCode = "204", description = "The user was registered", content = @Content),
-            @APIResponse(responseCode = "400", description = "The request was invalid", content = @Content)
+            @APIResponse(responseCode = "400", description = "The request was invalid", content = @Content(
+                    schema = @Schema(implementation = ErrorDTO.class)
+            ))
     })
     public Response registerUser(UserDTO userDto) {
         if (!userDto.ok()) {
-            return Response.status(400, "The request was invalid").build();
+            return Response.status(400)
+                    .entity(ErrorDTO.from(400, "The request was invalid"))
+                    .build();
         }
 
         var user = userDto.toBase();
         if (userRepo.userExists(user)) {
-            return Response.status(400, "A user with that email already exists").build();
+            return Response.status(400)
+                    .entity(ErrorDTO.from(400, "A user with that email already exists"))
+                    .build();
         }
 
         userRepo.addUser(user);
@@ -296,11 +325,15 @@ public class AuthController implements Serializable {
     @Operation(description = "Log out the current user by deleting the session cookies")
     @APIResponses(value = {
             @APIResponse(responseCode = "204", description = "The user was logged out", content = @Content),
-            @APIResponse(responseCode = "401", description = "No user is logged in", content = @Content)
+            @APIResponse(responseCode = "401", description = "No user is logged in", content = @Content(
+                    schema = @Schema(implementation = ErrorDTO.class)
+            ))
     })
     public Response logout(@CookieParam(SES_COOKIE) String session, @CookieParam(AUTH_COOKIE) String auth) {
         if (session == null && auth == null) {
-            return Response.status(401, "No user is logged in").build();
+            return Response.status(401)
+                    .entity(ErrorDTO.from(401, "No user is logged in"))
+                    .build();
         }
 
         return Response

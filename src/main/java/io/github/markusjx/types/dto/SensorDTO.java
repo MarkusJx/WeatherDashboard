@@ -1,11 +1,14 @@
 package io.github.markusjx.types.dto;
 
 import io.github.markusjx.types.Sensor;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 public class SensorDTO implements BaseConvertible<Sensor> {
-    public final String name;
+    @Schema(description = "The name of the sensor", example = "Sensor#1")
+    public String name;
 
-    public final String location;
+    @Schema(description = "The location of the sensor", example = "Living Room")
+    public String location;
 
     public SensorDTO() {
         name = null;

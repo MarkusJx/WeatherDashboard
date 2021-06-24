@@ -36,12 +36,13 @@ namespace Dialog {
     
     interface IdProps {
         id: string;
+        style?: React.CSSProperties
     }
 
     export class Title extends React.Component<IdProps> {
         public render() {
             return (
-                <h2 className="mdc-dialog__title" id={this.props.id}>
+                <h2 className="mdc-dialog__title" id={this.props.id} style={this.props.style}>
                     {this.props.children}
                 </h2>
             );
@@ -51,7 +52,7 @@ namespace Dialog {
     export class Content extends React.Component<IdProps> {
         public render() {
             return (
-                <div className="mdc-dialog__content" id={this.props.id}>
+                <div className="mdc-dialog__content" id={this.props.id} style={this.props.style}>
                     {this.props.children}
                 </div>
             );

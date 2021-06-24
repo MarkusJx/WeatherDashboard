@@ -7,12 +7,12 @@ import java.time.Instant;
 
 public class AuthSensorDTO {
     @Schema(description = "The id of the sensor to generate a token for", required = true, example = "0")
-    public final Long sensorId;
+    public Long sensorId;
 
     @Schema(description = "The generated token's expiration data", nullable = true, required = true,
             format = "type: integer, format: int64", example = "1624172968")
     @JsonFormat(shape = JsonFormat.Shape.NUMBER, pattern = "s")
-    public final Instant expiration;
+    public Instant expiration;
 
     public AuthSensorDTO() {
         sensorId = null;

@@ -28,10 +28,7 @@ version '1.0.0-SNAPSHOT'
 
 frontend {
     nodeVersion = '14.17.1'
-    // See 'scripts' section in your 'package.json file'
-    cleanScript = 'run clean'
     assembleScript = 'run build'
-    //checkScript = 'run check'
     packageJsonDirectory = new File('web')
 }
 

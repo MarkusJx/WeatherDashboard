@@ -79,7 +79,8 @@ export default class Login extends React.Component<LoginProps> {
         IAuth.getInstance().loginUser(data)
             .then(Credentials.signIn)
             .then(() => this.props.history.push('/'))
-            .catch(() => {
+            .catch((e: Error) => {
+                this.snackbar!.snackbar.labelText = `Could not sign in. Reason: ${e.message}`;
                 this.snackbar!.open();
                 this.loginButton!.button.disabled = false;
             });

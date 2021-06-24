@@ -31,6 +31,7 @@ export default class Register extends React.Component<RegisterProps> {
     private progressBar: LinearProgress | null = null;
     private slideContainer: HTMLDivElement | null = null;
     private checkmark: Checkmark | null = null;
+    private errorContainer: HTMLElement | null = null;
 
     public constructor(props: RegisterProps) {
         super(props);
@@ -46,7 +47,8 @@ export default class Register extends React.Component<RegisterProps> {
                         <h1 className={styles.heading}>Registration failed</h1>
                         <p>
                             Could not register a new user.
-                            You may want to retry again in a few minutes.
+                            You may want to retry again in a few minutes.<br/><br/>
+                            Error: <span ref={e => this.errorContainer = e}/>
                         </p>
                     </div>
 
@@ -149,7 +151,8 @@ export default class Register extends React.Component<RegisterProps> {
                 this.slideContainer!.classList.add(styles.right);
                 this.registerButton!.button.disabled = false;
             })
-            .catch(() => {
+            .catch((e: Error) => {
+                this.errorContainer!.innerText = e.message;
                 before();
                 setTimeout(() => {
                     this.progressBar!.element!.style.setProperty("--mdc-theme-primary", "#ff2800");

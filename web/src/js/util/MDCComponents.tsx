@@ -36,6 +36,8 @@ export interface ITextField {
 interface OutlinedTextFieldProps extends PasswordOutlinedTextFieldProps {
     // The text field type
     type?: string;
+    min?: number | string;
+    max?: number | string;
 }
 
 /**
@@ -79,8 +81,8 @@ export class OutlinedTextField extends React.Component<OutlinedTextFieldProps> i
                     <span className="mdc-notched-outline__trailing"/>
                 </span>
                 <input type={this.props.type ? this.props.type : "text"} className="mdc-text-field__input"
-                       minLength={this.props.minLength} aria-labelledby={this.props.labelId}
-                       maxLength={this.props.maxLength} required={this.props.required === true}
+                       minLength={this.props.minLength} aria-labelledby={this.props.labelId} min={this.props.min}
+                       maxLength={this.props.maxLength} required={this.props.required === true} max={this.props.max}
                        name={this.props.name} ref={e => this._input = e} disabled={this.props.disabled}/>
             </label>
         );

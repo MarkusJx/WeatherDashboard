@@ -18,6 +18,7 @@ export interface SensorDTO {
 
 export interface FullSensorDTO extends SensorDTO {
     id: number;
+    uuid: string;
 }
 
 export interface AuthSensorDTO {
@@ -30,4 +31,9 @@ export interface SensorDataDTO {
     timestamp: number;
     temperature: number;
     humidity: number;
+}
+
+export interface ErrorDTO {
+    errorCode: number;
+    message: string;
 }

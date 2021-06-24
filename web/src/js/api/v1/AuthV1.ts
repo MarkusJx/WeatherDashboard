@@ -1,6 +1,7 @@
 import IAuth from "../IAuth";
 import {AuthSensorDTO, AuthUserDTO, UserDTO} from "./DataTransferObjects";
 import Config from "../../util/Config";
+import Util from "../../util/Util";
 
 /**
  * The authentication strategies for the api version 1
@@ -13,11 +14,11 @@ export default class AuthV1 implements IAuth {
      * @return the text from the response
      * @private
      */
-    private static getText(r: Response): Promise<string> {
+    private static async getText(r: Response): Promise<string> {
         if (r.ok) {
             return r.text();
         } else {
-            throw new Error(r.statusText);
+            return Util.toJson(r);
         }
     }
 
@@ -36,7 +37,7 @@ export default class AuthV1 implements IAuth {
             headers: new Headers({'content-type': 'application/json'})
         }).then(r => {
             if (!r.ok) {
-                throw new Error(r.statusText);
+                return Util.toJson(r);
             }
         });
     }

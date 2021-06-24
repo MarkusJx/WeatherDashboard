@@ -1,13 +1,21 @@
 package io.github.markusjx.types;
 
+import org.hibernate.annotations.GenericGenerator;
+
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.UUID;
 
 @Entity
 public class Sensor implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(updatable = false, nullable = false)
+    private UUID uuid;
 
     @Column(nullable = false)
     private String name;
@@ -18,10 +26,15 @@ public class Sensor implements Serializable {
     public Sensor() {
         id = null;
         name = null;
+        uuid = UUID.randomUUID();
     }
 
     public Long getId() {
         return id;
+    }
+
+    public UUID getUUID() {
+        return uuid;
     }
 
     public void setId(Long id) {

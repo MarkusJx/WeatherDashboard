@@ -2,7 +2,10 @@ package io.github.markusjx.api.v1;
 
 import io.github.markusjx.repositories.SensorDataRepo;
 import io.github.markusjx.repositories.SensorRepo;
+import io.github.markusjx.types.dto.ErrorDTO;
 import io.github.markusjx.types.dto.SensorDataDTO;
+import io.quarkus.arc.ArcUndeclaredThrowableException;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.ParameterIn;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -49,6 +52,9 @@ public class SensorDataController {
     @Inject
     SensorRepo sensorRepo;
 
+    @Inject
+    JsonWebToken jwt;
+
     /**
      * Submit sensor data.
      * Requires a jwt for authentication.
@@ -64,7 +70,16 @@ public class SensorDataController {
     @APIResponses(value = {
             @APIResponse(responseCode = "202", description = "The data was saved", content = @Content),
             @APIResponse(responseCode = "404", description = "A sensor with the given id does not exist",
-                    content = @Content)
+                    content = @Content(schema = @Schema(implementation = ErrorDTO.class))),
+            @APIResponse(responseCode = "400",
+                    description = "The jwt is invalid or data with this timestamp already exists",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorDTO.class)
+                    )
+            ),
+            @APIResponse(responseCode = "401", description = "The uuid is invalid", content = @Content(
+                    schema = @Schema(implementation = ErrorDTO.class)
+            ))
     })
     @RolesAllowed({"sensor", "admin"})
     @SecurityRequirement(name = "jwt")
@@ -74,14 +89,28 @@ public class SensorDataController {
         var sensor = sensorRepo.getSensorById(id);
         if (sensor != null) {
             if (!sensor.getName().equals(name)) {
-                return Response.status(400, "The jwt was invalid").build();
+                return Response.status(400)
+                        .entity(ErrorDTO.from(400, "The jwt was invalid"))
+                        .build();
+            }
+
+            if (!sensor.getUUID().toString().equals(jwt.getClaim("acr"))) {
+                return Response.status(401)
+                        .entity(ErrorDTO.from(401, "The uuid is invalid"))
+                        .build();
             }
 
             var data = dataDTO.toBase();
             data.setSensor(sensor);
 
-            dataRepo.persistData(data);
-            return Response.accepted().build();
+            try {
+                dataRepo.persistData(data);
+                return Response.accepted().build();
+            } catch (ArcUndeclaredThrowableException ignored) {
+                return Response.status(400)
+                        .entity(ErrorDTO.from(400, "Data with this timestamp already exists"))
+                        .build();
+            }
         } else {
             return Response.status(404).build();
         }
@@ -102,7 +131,9 @@ public class SensorDataController {
             @APIResponse(responseCode = "200", description = "The data was retrieved", content = @Content(
                     schema = @Schema(implementation = SensorDataDTO[].class, description = "The retrieved data")
             )),
-            @APIResponse(responseCode = "404", description = "The sensor doesn't exist", content = @Content)
+            @APIResponse(responseCode = "404", description = "The sensor doesn't exist", content = @Content(
+                    schema = @Schema(implementation = ErrorDTO.class)
+            ))
     })
     @PermitAll
     @Parameters(value = {
@@ -123,10 +154,11 @@ public class SensorDataController {
                             @DefaultValue("-1") @QueryParam("offset") int offset) {
         final var sensor = sensorRepo.findByIdOptional(id);
         if (sensor.isEmpty()) {
-            return Response.status(404, "The sensor doesn't exist").build();
+            return Response.status(404)
+                    .entity(ErrorDTO.from(404, "The sensor doesn't exist"))
+                    .build();
         }
 
-        logger.debug("Saving data for sensor with id '{}'", id);
         List<SensorDataDTO> data = dataRepo.getDataForSensor(sensor.get(), limit, offset)
                 .stream()
                 .map(SensorDataDTO::fromData)

@@ -10,13 +10,13 @@ public class SensorDataDTO implements BaseConvertible<SensorData> {
     @Schema(description = "The timestamp of the data", required = true,
             format = "type: integer, format: int64", example = "1624172968")
     @JsonFormat(shape = JsonFormat.Shape.NUMBER, pattern = "s")
-    public final Instant timestamp;
+    public Instant timestamp;
 
     @Schema(description = "The sensor temperature data", required = true, example = "15")
-    public final Float temperature;
+    public Float temperature;
 
     @Schema(description = "The sensor humidity data", required = true)
-    public final Float humidity;
+    public Float humidity;
 
     public SensorDataDTO(Instant timestamp, Float temperature, Float humidity) {
         this.timestamp = timestamp;

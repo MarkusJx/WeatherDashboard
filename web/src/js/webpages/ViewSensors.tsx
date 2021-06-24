@@ -4,6 +4,7 @@ import {AuthSensorDTO, FullSensorDTO} from "../api/v1/DataTransferObjects";
 import ISensor from "../api/ISensor";
 
 import {AiOutlineSafetyCertificate} from "react-icons/ai";
+import {MdDeleteForever} from "react-icons/md";
 import {MDCRipple} from "@material/ripple";
 import Dialog from "../components/Dialog";
 import Dialogs from "../components/Dialogs";
@@ -44,6 +45,7 @@ interface TableElementProps {
     name: string;
     location: string;
     id: number;
+    uuid: string;
 }
 
 class TableElement extends React.Component<TableElementProps> {
@@ -60,7 +62,13 @@ class TableElement extends React.Component<TableElementProps> {
                     {this.props.id}
                 </DataTable.DataTableCell>
                 <DataTable.DataTableCell>
+                    {this.props.uuid}
+                </DataTable.DataTableCell>
+                <DataTable.DataTableCell>
                     <AuthSensorButton sensorId={this.props.id}/>
+                </DataTable.DataTableCell>
+                <DataTable.DataTableCell>
+                    <DeleteSensorButton sensorId={this.props.id}/>
                 </DataTable.DataTableCell>
             </DataTable.DataTableRow>
         );
@@ -78,6 +86,8 @@ class SingleTableElement extends React.Component<SingleTableElementProps> {
                 <DataTable.DataTableCellFirst>
                     {this.props.text}
                 </DataTable.DataTableCellFirst>
+                <DataTable.DataTableCell/>
+                <DataTable.DataTableCell/>
                 <DataTable.DataTableCell/>
                 <DataTable.DataTableCell/>
                 <DataTable.DataTableCell/>
@@ -100,27 +110,19 @@ interface AuthSensorButtonState {
     signedIn: boolean;
 }
 
-class AuthSensorButton extends React.Component<AuthSensorButtonProps, AuthSensorButtonState> {
-    private button: HTMLButtonElement | null = null;
+abstract class SensorButton extends React.Component<AuthSensorButtonProps, AuthSensorButtonState> {
+    protected button: HTMLButtonElement | null = null;
 
-    public constructor(props: AuthSensorButtonProps) {
+    protected constructor(props: AuthSensorButtonProps) {
         super(props);
         this.state = {
             signedIn: false
         };
 
-        this.onAuthClick = this.onAuthClick.bind(this);
         this.signInChange = this.signInChange.bind(this);
     }
 
-    public render(): React.ReactNode {
-        return (
-            <button className="mdc-icon-button material-icons main-data-table__action-button"
-                    onClick={this.onAuthClick} ref={e => this.button = e} disabled={!this.state.signedIn}>
-                <AiOutlineSafetyCertificate/>
-            </button>
-        );
-    }
+    public abstract render(): React.ReactNode;
 
     public componentDidMount(): void {
         MDCRipple.attachTo(this.button!).unbounded = true;
@@ -132,14 +134,50 @@ class AuthSensorButton extends React.Component<AuthSensorButtonProps, AuthSensor
         Credentials.unlistenLogInChange(this.signInChange);
     }
 
-    private onAuthClick(): void {
-        dialogRef.get<AuthSensorDialog>().open(this.props.sensorId);
-    }
-
-    private signInChange(signedIn: boolean): void {
+    protected signInChange(signedIn: boolean): void {
         this.setState({
             signedIn: signedIn
         });
+    }
+}
+
+class AuthSensorButton extends SensorButton {
+    public constructor(props: AuthSensorButtonProps) {
+        super(props);
+        this.onAuthClick = this.onAuthClick.bind(this);
+    }
+
+    public render(): React.ReactNode {
+        return (
+            <button className="mdc-icon-button material-icons main-data-table__action-button"
+                    onClick={this.onAuthClick} ref={e => this.button = e} disabled={!this.state.signedIn}>
+                <AiOutlineSafetyCertificate/>
+            </button>
+        );
+    }
+
+    private onAuthClick(): void {
+        dialogRef.get<AuthSensorDialog>().open(this.props.sensorId);
+    }
+}
+
+class DeleteSensorButton extends SensorButton {
+    public constructor(props: AuthSensorButtonProps) {
+        super(props);
+        this.onDeleteClick = this.onDeleteClick.bind(this);
+    }
+
+    public render(): React.ReactNode {
+        return (
+            <button className="mdc-icon-button material-icons main-data-table__action-button"
+                    onClick={this.onDeleteClick} ref={e => this.button = e} disabled={!this.state.signedIn}>
+                <MdDeleteForever/>
+            </button>
+        );
+    }
+
+    private onDeleteClick(): void {
+        deleteDialogRef.get<DeleteConfirmDialog>().open(this.props.sensorId);
     }
 }
 
@@ -242,6 +280,73 @@ export class AuthSensorDialog extends React.Component {
 
 const dialogRef = Dialogs.addDialog(AuthSensorDialog);
 
+type MDCCSSProperties = React.CSSProperties & {
+    "--mdc-theme-primary"?: string
+}
+
+export class DeleteConfirmDialog extends React.Component {
+    private container: Dialog.Container | null = null;
+    private currentId: number = -1;
+    private sensorIdElement: HTMLElement | null = null;
+
+    public render() {
+        const style: MDCCSSProperties = {
+            "--mdc-theme-primary": 'red',
+            width: 'unset',
+            height: 'unset',
+            minHeight: 'unset'
+        };
+
+        const contentStyle: React.CSSProperties = {
+            display: 'grid',
+            gridAutoFlow: 'column',
+            columnGap: '5px'
+        };
+
+        return (
+            <Dialog.Container labelledby="delete-dialog-title" describedby={styles.auth_dialog_content}
+                              ref={e => this.container = e} surfaceStyle={style}>
+                <Dialog.Title id="delete-dialog-title">
+                    Delete sensor
+                </Dialog.Title>
+                <Dialog.Content id={styles.auth_dialog_content} style={style}>
+                    <div style={contentStyle}>
+                        Are you sure you want to delete the sensor with id
+                        <span ref={e => this.sensorIdElement = e}/>
+                    </div>
+                </Dialog.Content>
+                <Dialog.Actions>
+                    <Dialog.Button action="accept">
+                        Ok
+                    </Dialog.Button>
+                    <Dialog.Button action="cancel">
+                        Cancel
+                    </Dialog.Button>
+                </Dialog.Actions>
+            </Dialog.Container>
+        );
+    }
+
+    public componentDidMount(): void {
+        this.container!.dialog!.listen('MDCDialog:closing', async (e: CustomEvent<{action: string}>) => {
+            if (e.detail.action === 'accept') {
+                await Credentials.refreshToken();
+                const token: string | null = Credentials.getToken();
+                await ISensor.getInstance().deleteSensor(this.currentId, token!);
+                window.location.reload();
+            }
+        });
+    }
+
+    public open(sensorId: number): void {
+        this.currentId = sensorId;
+        this.sensorIdElement!.innerText = String(this.currentId);
+        this.container!.dialog!.open();
+    }
+}
+
+const deleteDialogRef = Dialogs.addDialog(DeleteConfirmDialog);
+
 interface ViewSensorsState {
     sensors: FullSensorDTO[] | null;
 }
@@ -262,7 +367,9 @@ export default class ViewSensors extends React.Component<{}, ViewSensorsState> {
                     <TableHeaderCell>Name</TableHeaderCell>
                     <TableHeaderCell>Location</TableHeaderCell>
                     <TableHeaderCell>Id</TableHeaderCell>
+                    <TableHeaderCell>UUID</TableHeaderCell>
                     <TableHeaderCell>Generate token</TableHeaderCell>
+                    <TableHeaderCell>Delete sensor</TableHeaderCell>
                 </TableHeader>
                 <TableBody>
                     {this.getElements()}
@@ -288,7 +395,7 @@ export default class ViewSensors extends React.Component<{}, ViewSensorsState> {
             } else {
                 return this.state.sensors
                     .map((s, i) =>
-                        <TableElement name={s.name} location={s.location} id={s.id} key={i}/>);
+                        <TableElement name={s.name} location={s.location} id={s.id} uuid={s.uuid} key={i}/>);
             }
         } else {
             return (

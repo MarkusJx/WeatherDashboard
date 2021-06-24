@@ -16,8 +16,13 @@ import {AuthSensorDTO} from "../api/v1/DataTransferObjects";
 import IAuth from "../api/IAuth";
 import Dialog from "../components/Dialog";
 import Dialogs from "../components/Dialogs";
+import {Redirect} from "react-router-dom";
 
-export default class GenerateConfig extends React.Component {
+interface GenerateConfigState {
+    signedIn: boolean | null;
+}
+
+export default class GenerateConfig extends React.Component<{}, GenerateConfigState> {
     private wifiSsidField: ITextField | null = null;
     private wifiPasswordField: ITextField | null = null;
     private dhtPinField: ITextField | null = null;
@@ -36,6 +41,10 @@ export default class GenerateConfig extends React.Component {
 
     public constructor(props: {}) {
         super(props);
+        this.state = {
+            signedIn: null
+        };
+
         this.submit = this.submit.bind(this);
     }
 
@@ -56,63 +65,77 @@ export default class GenerateConfig extends React.Component {
     }
 
     public render(): React.ReactNode {
-        return (
-            <>
-                <form method="post" className={styles.generate_config_form} onSubmit={this.submit}>
-                    <h1>Generate a config file for a sensor</h1>
-                    <OutlinedTextField required ref={e => this.wifiSsidField = e}>
-                        WiFi SSID
-                    </OutlinedTextField>
-                    <PasswordOutlinedTextField required ref={e => this.wifiPasswordField = e}>
-                        WiFi password
-                    </PasswordOutlinedTextField>
-                    <OutlinedTextField required ref={e => this.dhtPinField = e}>
-                        DHT Pin
-                    </OutlinedTextField>
-                    <OutlinedTextField required ref={e => this.dhtTypeField = e}>
-                        DHT Type
-                    </OutlinedTextField>
-                    <OutlinedTextField required type="number" ref={e => this.sendIntervalField = e}>
-                        Send interval (seconds)
-                    </OutlinedTextField>
-                    <div className={styles.use_ssl_container}>
-                        <div className={styles.use_ssl_content}>
-                            <span>Use SSL:</span>
-                            <Checkbox ref={e => this.sslCheckbox = e}/>
+        if (this.state.signedIn !== false) {
+            return (
+                <>
+                    <form method="post" className={styles.generate_config_form} onSubmit={this.submit}>
+                        <h1>Generate a config file for a sensor</h1>
+                        <OutlinedTextField required ref={e => this.wifiSsidField = e}>
+                            WiFi SSID
+                        </OutlinedTextField>
+                        <PasswordOutlinedTextField required ref={e => this.wifiPasswordField = e}>
+                            WiFi password
+                        </PasswordOutlinedTextField>
+                        <OutlinedTextField required ref={e => this.dhtPinField = e} type="number" min={0}>
+                            Sensor Pin
+                        </OutlinedTextField>
+                        <OutlinedTextField required ref={e => this.dhtTypeField = e}>
+                            DHT Type
+                        </OutlinedTextField>
+                        <OutlinedTextField required type="number" ref={e => this.sendIntervalField = e} min={1}>
+                            Send interval (seconds)
+                        </OutlinedTextField>
+                        <div className={styles.use_ssl_container}>
+                            <div className={styles.use_ssl_content}>
+                                <span>Use SSL:</span>
+                                <Checkbox ref={e => this.sslCheckbox = e}/>
+                            </div>
                         </div>
-                    </div>
-                    <OutlinedTextField required ref={e => this.hostnameField = e}>
-                        Hostname
-                    </OutlinedTextField>
-                    <OutlinedTextField required ref={e => this.ntpServerField = e}>
-                        NTP Server
-                    </OutlinedTextField>
-                    <OutlinedTextField required ref={e => this.utcOffsetField = e} type="number">
-                        UTC Offset
-                    </OutlinedTextField>
-                    <OutlinedTextField required ref={e => this.apiUrlField = e}>
-                        API Url
-                    </OutlinedTextField>
-                    <OutlinedTextField required ref={e => this.apiPortField = e} type="number">
-                        API Port
-                    </OutlinedTextField>
-                    <OutlinedTextField required ref={e => this.sensorIdField = e} type="number">
-                        Sensor ID
-                    </OutlinedTextField>
-                    <ExpirationDatePicker ref={e => this.expirationPicker = e} style={{gridColumn: '1/3'}}
-                                          title="Token expiration date:"/>
+                        <OutlinedTextField required ref={e => this.hostnameField = e}>
+                            Hostname
+                        </OutlinedTextField>
+                        <OutlinedTextField required ref={e => this.ntpServerField = e}>
+                            NTP Server
+                        </OutlinedTextField>
+                        <OutlinedTextField required ref={e => this.utcOffsetField = e} type="number">
+                            UTC Offset
+                        </OutlinedTextField>
+                        <OutlinedTextField required ref={e => this.apiUrlField = e}>
+                            API Url
+                        </OutlinedTextField>
+                        <OutlinedTextField required ref={e => this.apiPortField = e} type="number" min={0}>
+                            API Port
+                        </OutlinedTextField>
+                        <OutlinedTextField required ref={e => this.sensorIdField = e} type="number" min={1}>
+                            Sensor ID
+                        </OutlinedTextField>
+                        <ExpirationDatePicker ref={e => this.expirationPicker = e} style={{gridColumn: '1/3'}}
+                                              title="Token expiration date:"/>
 
-                    <TextButton ref={e => this.submitButton = e}>
-                        Generate
-                    </TextButton>
-                </form>
-                <Snackbar ref={e => this.errorSnackbar = e}/>
-            </>
-        );
+                        <TextButton ref={e => this.submitButton = e}>
+                            Generate
+                        </TextButton>
+                    </form>
+                    <Snackbar ref={e => this.errorSnackbar = e}/>
+                </>
+            );
+        } else {
+            return (
+                <Redirect to="/unauthorized"/>
+            );
+        }
     }
 
-    public componentDidMount(): void {
-        this.dhtPinField!.textField.value = "D5";
+    public async componentDidMount(): Promise<void> {
+        this.disabled = true;
+        const signedIn: boolean = await Credentials.isSignedIn();
+        this.setState({
+            signedIn: signedIn
+        });
+
+        if (!signedIn) return;
+
+        this.dhtPinField!.textField.value = "5";
         this.dhtTypeField!.textField.value = "DHT11";
         this.sendIntervalField!.textField.value = "60";
         this.ntpServerField!.textField.value = "pool.ntp.org";
@@ -120,6 +143,7 @@ export default class GenerateConfig extends React.Component {
         this.apiUrlField!.textField.value = window.location.hostname;
         this.apiPortField!.textField.value = window.location.port;
         this.sslCheckbox!.checkbox.checked = window.location.protocol === 'https:';
+        this.disabled = false;
     }
 
     private async submit(event: any): Promise<void> {
@@ -212,7 +236,7 @@ class GeneratedConfig extends React.Component {
         }
 
         this.codeElement!.innerText = `// DHT definitions
-#define DHTPIN ${data.dht_pin}         // pin of the arduino where the sensor is connected to
+#define DHTPIN D${data.dht_pin}         // pin of the arduino where the sensor is connected to
 #define DHTTYPE ${data.dht_type}     // define the type of sensor (DHT11 or DHT22)
 
 // The delay between sending values in seconds

@@ -1,8 +1,11 @@
 package io.github.markusjx.api.v1;
 
 import io.github.markusjx.repositories.SensorRepo;
+import io.github.markusjx.repositories.UserRepo;
 import io.github.markusjx.types.Sensor;
+import io.github.markusjx.types.dto.ErrorDTO;
 import io.github.markusjx.types.dto.SensorDTO;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -28,6 +31,7 @@ import java.util.stream.Collectors;
 @Consumes(MediaType.APPLICATION_JSON)
 public class SensorController {
     private static final Logger logger = LoggerFactory.getLogger(SensorController.class);
+
     @Inject
     SensorRepo repo;
 
@@ -39,7 +43,9 @@ public class SensorController {
                     schema = @Schema(implementation = Sensor.class, description = "The retrieved sensor")
             )),
             @APIResponse(responseCode = "404", description = "A sensor with the given id does not exist",
-                    content = @Content
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorDTO.class, description = "The error message")
+                    )
             )
     })
     @RolesAllowed({"user", "admin"})
@@ -49,7 +55,9 @@ public class SensorController {
         if (s != null) {
             return Response.ok(s).build();
         } else {
-            return Response.status(404).build();
+            return Response.status(404)
+                    .entity(ErrorDTO.from(404, "A sensor with the given id does not exist"))
+                    .build();
         }
     }
 
@@ -99,7 +107,8 @@ public class SensorController {
     @Operation(summary = "Delete a sensor")
     @APIResponses(value = {
             @APIResponse(responseCode = "204", description = "The sensor was deleted", content = @Content),
-            @APIResponse(responseCode = "404", description = "A sensor with that id doesn't exist", content = @Content)
+            @APIResponse(responseCode = "404", description = "A sensor with that id doesn't exist",
+                    content = @Content(schema = @Schema(implementation = ErrorDTO.class)))
     })
     @RolesAllowed({"user", "admin"})
     @SecurityRequirement(name = "jwt")
@@ -111,7 +120,9 @@ public class SensorController {
             repo.removeSensor(s);
             return Response.noContent().build();
         } else {
-            return Response.status(404).build();
+            return Response.status(404)
+                    .entity(ErrorDTO.from(404, "A sensor with that id doesn't exist"))
+                    .build();
         }
     }
 }

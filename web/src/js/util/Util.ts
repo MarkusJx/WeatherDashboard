@@ -1,9 +1,17 @@
+import {ErrorDTO} from "../api/v1/DataTransferObjects";
+
 export default class Util {
-    public static toJson<T = any>(r: Response): Promise<T> {
+    public static async toJson<T = any>(r: Response): Promise<T> {
         if (r.ok) {
             return r.json();
         } else {
-            throw new Error("The response is not ok");
+            let message: string = "The request failed";
+            try {
+                const error: ErrorDTO = JSON.parse(await r.text());
+                message = error.message;
+            } catch (ignored) {
+            }
+            throw new Error(message);
         }
     }
 

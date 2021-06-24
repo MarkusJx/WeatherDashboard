@@ -20,4 +20,6 @@ export default abstract class ISensor {
     public abstract addSensor(data: SensorDTO, token: string): Promise<number>;
 
     public abstract listSensors(): Promise<FullSensorDTO[]>;
+
+    public abstract deleteSensor(id: number, token: string): Promise<void>;
 }

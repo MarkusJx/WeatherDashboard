@@ -6,16 +6,16 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 public class UserDTO implements BaseConvertible<User> {
     @Schema(description = "The users first name", example = "Some", required = true)
-    public final String firstName;
+    public String firstName;
 
     @Schema(description = "The users last name", example = "Dude", required = true)
-    public final String lastName;
+    public String lastName;
 
     @Schema(description = "The users email", example = "email@email.com", required = true)
-    public final String email;
+    public String email;
 
     @Schema(description = "The users password", example = "Password", required = true)
-    public final String password;
+    public String password;
 
     public UserDTO() {
         firstName = null;
