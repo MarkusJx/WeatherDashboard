@@ -79,6 +79,7 @@ export default class AddSensor extends React.Component<{}, AddSensorState> {
         });
 
         this.disabled = false;
+        document.title = "Add a new sensor";
     }
 
     private async onClick(event: any): Promise<void> {

@@ -3,6 +3,9 @@ import {FullSensorDTO, SensorDTO} from "./DataTransferObjects";
 import Config from "../../util/Config";
 import Util from "../../util/Util";
 
+/**
+ * The api V1 sensor method implementation
+ */
 export default class SensorV1 implements ISensor {
     public addSensor(data: SensorDTO, token: string): Promise<number> {
         return fetch(`${Config.SERVER_URL}/api/v1/sensor`, {

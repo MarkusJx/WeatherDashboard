@@ -8,4 +8,8 @@ export default class NotFound extends React.Component {
             </>
         );
     }
+
+    public componentDidMount(): void {
+        document.title = "Page Not Found";
+    }
 }

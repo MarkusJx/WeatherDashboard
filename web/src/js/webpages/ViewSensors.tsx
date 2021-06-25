@@ -379,6 +379,7 @@ export default class ViewSensors extends React.Component<{}, ViewSensorsState> {
     }
 
     public componentDidMount(): void {
+        document.title = "View sensors";
         ISensor.getInstance().listSensors().then(sensors => {
             this.setState({
                 sensors: sensors

@@ -8,4 +8,8 @@ export default class Unauthorized extends React.Component {
             </>
         );
     }
+
+    public componentDidMount(): void {
+        document.title = "Unauthorized";
+    }
 }

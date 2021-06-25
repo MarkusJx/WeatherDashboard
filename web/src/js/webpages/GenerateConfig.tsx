@@ -141,7 +141,7 @@ export default class GenerateConfig extends React.Component<{}, GenerateConfigSt
         this.ntpServerField!.textField.value = "pool.ntp.org";
         this.utcOffsetField!.textField.value = String(Util.getUtcOffset() * 60);
         this.apiUrlField!.textField.value = window.location.hostname;
-        this.apiPortField!.textField.value = window.location.port;
+        this.apiPortField!.textField.value = window.location.port.length === 0 ? "80" : window.location.port;
         this.sslCheckbox!.checkbox.checked = window.location.protocol === 'https:';
         this.disabled = false;
     }

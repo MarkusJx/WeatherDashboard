@@ -7,7 +7,7 @@
 #include <DHT.h>
 
 // Include the config file
-#include "config.h"
+#include "config.hpp"
 
 // DHT sensor instance
 DHT dht(DHTPIN, DHTTYPE, 6);
@@ -155,9 +155,9 @@ void sleep() {
   Serial.print("Sleeping for ");
   Serial.print(SLEEP_SECONDS);
   Serial.println(" seconds");
+  Serial.println("");
 
   ESP.deepSleep(SLEEP_SECONDS * 1000000);
-  Serial.println("\n");
 }
 
 /**
