@@ -1,7 +1,5 @@
 import styles from '../../styles/webpages/App.module.scss';
 import React from "react";
-import Config from "../util/Config";
-import Util from "../util/Util";
 import SensorData from "../SensorData";
 import {FullSensorDTO} from "../api/v1/DataTransferObjects";
 import ISensor from "../api/ISensor";
@@ -32,7 +30,8 @@ export default class App extends React.Component<{}, AppState> {
     public render(): React.ReactNode {
         return (
             <div className={styles.App}>
-                {this.sensorsSet() ? undefined : this.generateSensors()}
+                <h1 className={styles.heading}>Latest sensor data</h1>
+                {this.sensorsSet() ? <h2 className={styles.heading}>Loading...</h2> : this.generateSensors()}
             </div>
         );
     }
@@ -42,10 +41,21 @@ export default class App extends React.Component<{}, AppState> {
         ISensor.getInstance().listSensors().then(res => this.sensors = res);
     }
 
-    private generateSensors(): React.ReactNode[] {
-        return this.sensors.map((s: FullSensorDTO, i: number) => (
-            <SensorData sensorId={s.id} key={i}/>
-        ));
+    private generateSensors(): React.ReactNode[] | React.ReactNode {
+        if (this.sensors.length > 0) {
+            return this.sensors.map((s: FullSensorDTO, i: number) => (
+                <div className={styles.data_container} key={i}>
+                    <h3 className={styles.text}>{s.name}</h3>
+                    <p className={styles.text}>Location: {s.location}</p>
+                    <p className={styles.text}>Id: {s.id}</p>
+                    <SensorData sensorId={s.id}/>
+                </div>
+            ));
+        } else {
+            return (
+                <h2 className={styles.heading}>Error: No sensors registered</h2>
+            );
+        }
     }
 
     private sensorsSet(): boolean {

@@ -4,6 +4,8 @@ import ISensorData from "./api/ISensorData";
 import {SensorDataDTO} from "./api/v1/DataTransferObjects";
 import Util from "./util/Util";
 
+import styles from "../styles/SensorData.module.scss";
+
 export interface SensorDataProps {
     sensorId: number
 }
@@ -77,15 +79,23 @@ interface SensorDataChartProps {
 
 class SensorDataChart extends React.Component<SensorDataChartProps> {
     public render(): React.ReactNode {
-        return (
-            <LineChart width={1200} height={600} data={this.props.data}
-                       margin={{top: 5, right: 20, left: 10, bottom: 5}}>
-                <XAxis dataKey="name"/>
-                <Tooltip/>
-                <CartesianGrid stroke="#f5f5f5"/>
-                <Line type="monotone" dataKey="temperature" stroke="#ff7300" yAxisId={0}/>
-                <Line type="monotone" dataKey="humidity" stroke="#387908" yAxisId={1}/>
-            </LineChart>
-        );
+        if (this.props.data.length > 0) {
+            return (
+                <LineChart width={1200} height={600} data={this.props.data}
+                           margin={{top: 5, right: 20, left: 10, bottom: 5}}>
+                    <XAxis dataKey="name"/>
+                    <Tooltip/>
+                    <CartesianGrid stroke="#f5f5f5"/>
+                    <Line type="monotone" dataKey="temperature" stroke="#ff7300" yAxisId={0}/>
+                    <Line type="monotone" dataKey="humidity" stroke="#387908" yAxisId={1}/>
+                </LineChart>
+            );
+        } else {
+            return (
+                <div className={styles.nodata}>
+                    <h3 className={styles.text}>No data available</h3>
+                </div>
+            );
+        }
     }
 }

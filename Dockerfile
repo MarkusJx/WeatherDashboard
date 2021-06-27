@@ -10,4 +10,5 @@ WORKDIR /work/
 COPY --from=build /usr/src/app/build/*-runner /work/application
 RUN chmod 775 /work
 EXPOSE 8080
+EXPOSE 8443
 CMD ["./application", "-Dquarkus.http.host=0.0.0.0"]

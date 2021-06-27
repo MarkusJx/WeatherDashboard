@@ -27,10 +27,16 @@ services:
         condition: service_healthy
     ports:
       - "80:8080"
-      #- "443:443"
+      - "443:8443"
     volumes:
       # Environment file
       - "./.env.example:/work/.env"
+      # JWT RSA keys
+      - "./jwtPublicKey.pem:/work/jwtPublicKey.pem"
+      - "./jwtPrivateKey.pem:/work/jwtPrivateKey.pem"
+      # Key files for ssl support
+      #- "./ssl.crt:/work/ssl.crt"
+      #- "./ssl.key:/work/ssl.key"
 
 # Store the database permanently
 volumes:
