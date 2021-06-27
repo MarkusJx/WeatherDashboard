@@ -18,28 +18,51 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Objects;
 
+/**
+ * A user
+ */
 @Entity
 @UserDefinition
 public class User implements Serializable {
+    /**
+     * The id of the user.
+     * Will be generated on user creation.
+     */
     @Id
     @GeneratedValue
     private Long id;
 
+    /**
+     * The first name of the user
+     */
     @Column(nullable = false)
     private String firstName;
 
+    /**
+     * The last name of the user
+     */
     @Column(nullable = false)
     private String lastName;
 
+    /**
+     * The email of the user
+     */
     @Id
     @Username
     @Column(nullable = false)
     private String email;
 
+    /**
+     * The user's password.
+     * Will be hashed using bcrypt.
+     */
     @Password
     @Column(nullable = false)
     private String password;
 
+    /**
+     * The role of the user
+     */
     @Column
     @Roles
     private String role;
@@ -92,7 +115,16 @@ public class User implements Serializable {
         this.role = role;
     }
 
-    public boolean verifyPassword(String originalPwd) throws InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException {
+    /**
+     * Verify the password of the user
+     *
+     * @param password the password to verify against the stored password
+     * @return true if the given password matches the stored password
+     * @throws InvalidKeySpecException  if the given password is not supported or could be decoded
+     * @throws NoSuchAlgorithmException if the given algorithm has no available implementations
+     * @throws InvalidKeyException      if the stored password is not supported by the bcrypt algorithm
+     */
+    public boolean verifyPassword(String password) throws InvalidKeySpecException, NoSuchAlgorithmException, InvalidKeyException {
         // convert encrypted password string to a password key
         var rawPassword = ModularCrypt.decode(this.password);
 
@@ -103,7 +135,7 @@ public class User implements Serializable {
         BCryptPassword restored = (BCryptPassword) factory.translate(rawPassword);
 
         // verify restored password against original
-        return factory.verify(restored, originalPwd.toCharArray());
+        return factory.verify(restored, password.toCharArray());
     }
 
     @Override

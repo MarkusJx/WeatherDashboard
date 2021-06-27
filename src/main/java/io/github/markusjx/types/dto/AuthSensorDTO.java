@@ -5,6 +5,7 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
 import java.time.Instant;
 
+@Schema(description = "A data transfer object for authenticating a sensor")
 public class AuthSensorDTO {
     @Schema(description = "The id of the sensor to generate a token for", required = true, example = "0")
     public Long sensorId;

@@ -2,6 +2,7 @@ package io.github.markusjx.types.dto;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 
+@Schema(description = "A data transfer object for authenticating a user")
 public class AuthUserDTO {
     @Schema(description = "The users email address", required = true, minLength = 3, example = "email@email.com")
     public String email;

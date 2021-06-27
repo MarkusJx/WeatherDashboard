@@ -5,20 +5,35 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
 
+/**
+ * A sensor data entity
+ */
 @Entity
 public class SensorData implements Serializable {
+    /**
+     * The sensor that generated this data
+     */
     @Id
     @ManyToOne
     @JoinColumn
     private Sensor sensor;
 
+    /**
+     * The timestamp of the data
+     */
     @Id
     @Column(nullable = false)
     private Instant timestamp;
 
+    /**
+     * The captured temperature value
+     */
     @Column
     private Float temperature;
 
+    /**
+     * The captured humidity value
+     */
     @Column
     private Float humidity;
 

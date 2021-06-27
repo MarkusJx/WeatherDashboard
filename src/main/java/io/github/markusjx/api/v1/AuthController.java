@@ -101,6 +101,8 @@ public class AuthController implements Serializable {
     public Response refreshTokens(@CookieParam(SES_COOKIE) String session, @CookieParam(AUTH_COOKIE) String persistent) {
         JsonWebToken sessionToken = null;
         JsonWebToken persistentToken = null;
+
+        // Try to parse the session cookie if it isn't null
         if (session != null) {
             try {
                 sessionToken = parser.parse(session);
@@ -109,6 +111,7 @@ public class AuthController implements Serializable {
             }
         }
 
+        // Try to parse the persistent authentication cookie if it isn't null
         if (persistent != null) {
             try {
                 persistentToken = parser.parse(persistent);
@@ -117,6 +120,7 @@ public class AuthController implements Serializable {
             }
         }
 
+        // At least one cookie must be set (and valid)
         if (persistentToken == null && sessionToken == null) {
             return Response
                     .status(401)
@@ -126,6 +130,7 @@ public class AuthController implements Serializable {
                     .build();
         }
 
+        // Check if the subjects match
         if (persistentToken != null && sessionToken != null && !persistentToken.getSubject().equals(sessionToken.getSubject())) {
             return Response
                     .status(400)
@@ -135,6 +140,7 @@ public class AuthController implements Serializable {
                     .build();
         }
 
+        // Get the email of the authenticated user
         final String email = sessionToken != null ? sessionToken.getSubject() : persistentToken.getSubject();
         var user = userRepo.findByEmail(email);
         if (user.isEmpty()) {
@@ -146,6 +152,7 @@ public class AuthController implements Serializable {
                     .build();
         }
 
+        // Generate new tokens
         return generateTokens(email, user.get().getRole(), persistentToken != null);
     }
 
@@ -166,14 +173,16 @@ public class AuthController implements Serializable {
     })
     @SecurityRequirement(name = "jwt")
     public Response getSensorToken(@Context SecurityContext ctx, AuthSensorDTO data) {
+        // The sensor id must not be null
         if (data.sensorId == null) {
             return Response.status(400)
                     .entity(ErrorDTO.from(400, "The 'sensorId' parameter must not be null"))
                     .build();
         }
 
-        var sensor = sensorRepo.getSensorById(data.sensorId);
-        if (sensor == null) {
+        // Get the sensor by its id
+        var sensor = sensorRepo.findByIdOptional(data.sensorId);
+        if (sensor.isEmpty()) {
             return Response.status(400)
                     .entity(ErrorDTO.from(400, "A sensor with that id doesn't exist"))
                     .build();
@@ -183,9 +192,9 @@ public class AuthController implements Serializable {
         var builder = Jwt.issuer(ISSUER)
                 .issuedAt(Instant.now())
                 .groups("sensor")
-                .upn(sensor.getName())
+                .upn(sensor.get().getName())
                 .subject(data.sensorId.toString())
-                .claim("acr", sensor.getUUID().toString());
+                .claim("acr", sensor.get().getUUID().toString());
 
         if (data.expiration != null) {
             builder.expiresAt(data.expiration);
@@ -307,6 +316,7 @@ public class AuthController implements Serializable {
                     .build();
         }
 
+        // Check if the user exists
         var user = userDto.toBase();
         if (userRepo.userExists(user)) {
             return Response.status(400)
@@ -314,6 +324,7 @@ public class AuthController implements Serializable {
                     .build();
         }
 
+        // Persist the user object
         userRepo.addUser(user);
         logger.info("Registering user with email '{}', first name '{}', last name '{}' and id '{}'",
                 user.getEmail(), user.getFirstName(), user.getLastName(), user.getId());
@@ -330,12 +341,14 @@ public class AuthController implements Serializable {
             ))
     })
     public Response logout(@CookieParam(SES_COOKIE) String session, @CookieParam(AUTH_COOKIE) String auth) {
+        // At least one authentication cookie should be set, right?
         if (session == null && auth == null) {
             return Response.status(401)
                     .entity(ErrorDTO.from(401, "No user is logged in"))
                     .build();
         }
 
+        // Remove all cookies
         return Response
                 .noContent()
                 .cookie(removeCookie(SES_COOKIE))

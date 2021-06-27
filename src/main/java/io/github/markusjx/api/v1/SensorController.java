@@ -1,11 +1,9 @@
 package io.github.markusjx.api.v1;
 
 import io.github.markusjx.repositories.SensorRepo;
-import io.github.markusjx.repositories.UserRepo;
 import io.github.markusjx.types.Sensor;
 import io.github.markusjx.types.dto.ErrorDTO;
 import io.github.markusjx.types.dto.SensorDTO;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -51,9 +49,9 @@ public class SensorController {
     @RolesAllowed({"user", "admin"})
     @SecurityRequirement(name = "jwt")
     public Response getSensor(@PathParam("id") Long id, @Context SecurityContext ctx) {
-        var s = repo.getSensorById(id);
-        if (s != null) {
-            return Response.ok(s).build();
+        var s = repo.findByIdOptional(id);
+        if (s.isPresent()) {
+            return Response.ok(s.get()).build();
         } else {
             return Response.status(404)
                     .entity(ErrorDTO.from(404, "A sensor with the given id does not exist"))
@@ -113,11 +111,11 @@ public class SensorController {
     @RolesAllowed({"user", "admin"})
     @SecurityRequirement(name = "jwt")
     public Response removeSensor(@PathParam("id") Long id, @Context SecurityContext ctx) {
-        var s = repo.getSensorById(id);
+        var s = repo.findByIdOptional(id);
 
-        if (s != null) {
+        if (s.isPresent()) {
             logger.info("Removing sensor with id '{}' by user '{}'", id, ctx.getUserPrincipal().getName());
-            repo.removeSensor(s);
+            repo.removeSensor(s.get());
             return Response.noContent().build();
         } else {
             return Response.status(404)

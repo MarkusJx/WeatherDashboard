@@ -86,22 +86,22 @@ public class SensorDataController {
     public Response submitData(@PathParam("id") Long id, @Context SecurityContext ctx, SensorDataDTO dataDTO) {
         final String name = ctx.getUserPrincipal().getName();
 
-        var sensor = sensorRepo.getSensorById(id);
-        if (sensor != null) {
-            if (!sensor.getName().equals(name)) {
+        var sensor = sensorRepo.findByIdOptional(id);
+        if (sensor.isPresent()) {
+            if (!sensor.get().getName().equals(name)) {
                 return Response.status(400)
                         .entity(ErrorDTO.from(400, "The jwt was invalid"))
                         .build();
             }
 
-            if (!sensor.getUUID().toString().equals(jwt.getClaim("acr"))) {
+            if (!sensor.get().getUUID().toString().equals(jwt.getClaim("acr"))) {
                 return Response.status(401)
                         .entity(ErrorDTO.from(401, "The uuid is invalid"))
                         .build();
             }
 
             var data = dataDTO.toBase();
-            data.setSensor(sensor);
+            data.setSensor(sensor.get());
 
             try {
                 dataRepo.persistData(data);
