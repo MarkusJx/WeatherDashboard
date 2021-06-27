@@ -25,4 +25,5 @@ jobs:
       - name: Create Buildx Runner
         run: docker buildx create --platform linux/amd64,linux/arm/v7,linux/arm64 --use
       - name: Docker build
-        run: docker buildx build -t ghcr.io/markusjx/weather_dashboard:latest --platform linux/amd64,linux/arm/v7,linux/arm64 --pull --push .
+        run: docker buildx build -t ghcr.io/markusjx/weather_dashboard:latest --platform linux/amd64,linux/arm64 --pull --push .
+        #run: docker buildx build -t ghcr.io/markusjx/weather_dashboard:latest --platform linux/amd64,linux/arm/v7,linux/arm64 --pull --push .
