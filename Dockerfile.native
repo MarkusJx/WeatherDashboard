@@ -1,0 +1,22 @@
+# Build the react frontend
+FROM node:14-buster AS build-react
+COPY . /usr/src/app
+WORKDIR /usr/src/app/web
+RUN npm install
+RUN npm run build
+
+# Build the native executable
+FROM ghcr.io/graalvm/graalvm-ce:latest AS build-java
+COPY --from=build-react /usr/src/app /usr/src/app
+RUN gu install native-image
+WORKDIR /usr/src/app
+RUN ./gradlew -b /usr/src/app/build.gradle clean build -Dquarkus.package.type=native
+
+# Create the runner
+FROM registry.access.redhat.com/ubi8/ubi-minimal
+WORKDIR /work/
+COPY --from=build-java /usr/src/app/build/*-runner /work/application
+RUN chmod 775 /work
+EXPOSE 8080
+EXPOSE 8443
+CMD ["./application", "-Dquarkus.http.host=0.0.0.0"]

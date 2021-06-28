@@ -1,0 +1,11 @@
+FROM gradle:7.1-jdk11-hotspot AS build
+COPY . /usr/src/app
+RUN gradle -b /usr/src/app/build.gradle clean build
+
+FROM arm64v8/adoptopenjdk:11-hotspot-focal
+WORKDIR /work/
+COPY --from=build /usr/src/app/build/quarkus-app /work
+RUN chmod 775 /work
+EXPOSE 8080
+EXPOSE 8443
+CMD ["java", "-jar", "quarkus-run.jar", "-Dquarkus.http.host=0.0.0.0"]

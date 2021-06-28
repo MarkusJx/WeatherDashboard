@@ -1,7 +1,7 @@
 plugins {
     id 'java'
     id 'io.quarkus'
-    id 'org.siouan.frontend-jdk11' version '5.2.0'
+    //id 'org.siouan.frontend-jdk11' version '5.2.0'
 }
 
 repositories {
@@ -26,11 +26,11 @@ dependencies {
 group 'io.github.markusjx'
 version '1.0.0-SNAPSHOT'
 
-frontend {
+/*frontend {
     nodeVersion = '14.17.1'
     assembleScript = 'run build'
     packageJsonDirectory = new File('web')
-}
+}*/
 
 quarkusBuild {
     nativeArgs {
