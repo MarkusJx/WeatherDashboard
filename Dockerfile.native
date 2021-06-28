@@ -10,6 +10,7 @@ FROM ghcr.io/graalvm/graalvm-ce:latest AS build-java
 COPY --from=build-react /usr/src/app /usr/src/app
 WORKDIR /usr/src/app
 RUN gu install native-image
+RUN chmod +x gradlew
 RUN ./gradlew -b /usr/src/app/build.gradle clean build -Dquarkus.package.type=native
 
 # Create the runner
