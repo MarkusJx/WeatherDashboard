@@ -47,10 +47,10 @@ jobs:
         run: docker buildx create --platform ${{matrix.platform}} --use
       - name: Docker build amd64
         run: docker buildx build -t ghcr.io/markusjx/weather_dashboard/jvm:latest --platform ${{matrix.platform}} --pull --push -f Dockerfile.jvm-amd64 .
-        if: matrix.platform == "linux/amd64"
+        if: matrix.platform == 'linux/amd64'
       - name: Docker build arm64
         run: docker buildx build -t ghcr.io/markusjx/weather_dashboard/jvm:latest --platform ${{matrix.platform}} --pull --push -f Dockerfile.jvm-arm64 .
-        if: matrix.platform == "linux/arm64"
+        if: matrix.platform == 'linux/arm64'
       - name: Docker build arm32
         run: docker buildx build -t ghcr.io/markusjx/weather_dashboard/jvm:latest --platform ${{matrix.platform}} --pull --push -f Dockerfile.jvm-arm32 .
-        if: matrix.platform == "linux/arm/v7"
+        if: matrix.platform == 'linux/arm/v7'
