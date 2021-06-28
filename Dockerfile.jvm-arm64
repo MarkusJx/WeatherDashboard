@@ -1,10 +1,19 @@
-FROM gradle:7.1-jdk11-hotspot AS build
+# Build the react frontend
+FROM node:14-buster AS build-react
 COPY . /usr/src/app
-RUN gradle -b /usr/src/app/build.gradle clean build
+WORKDIR /usr/src/app/web
+RUN npm install
+RUN npm run build
+
+# Build the jar
+FROM arm64v8/adoptopenjdk:11-hotspot-focal AS build-java
+COPY --from=build-react /usr/src/app /usr/src/app
+WORKDIR /usr/src/app
+RUN ./gradlew -b /usr/src/app/build.gradle clean build
 
 FROM arm64v8/adoptopenjdk:11-hotspot-focal
 WORKDIR /work/
-COPY --from=build /usr/src/app/build/quarkus-app /work
+COPY --from=build-java /usr/src/app/build/quarkus-app /work
 RUN chmod 775 /work
 EXPOSE 8080
 EXPOSE 8443

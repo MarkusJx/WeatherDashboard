@@ -8,8 +8,8 @@ RUN npm run build
 # Build the native executable
 FROM ghcr.io/graalvm/graalvm-ce:latest AS build-java
 COPY --from=build-react /usr/src/app /usr/src/app
-RUN gu install native-image
 WORKDIR /usr/src/app
+RUN gu install native-image
 RUN ./gradlew -b /usr/src/app/build.gradle clean build -Dquarkus.package.type=native
 
 # Create the runner
