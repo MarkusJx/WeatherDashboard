@@ -2,6 +2,7 @@
 FROM node:14-buster AS build-react
 COPY . /usr/src/app
 WORKDIR /usr/src/app/web
+USER root
 RUN npm install
 RUN npm run build
 
