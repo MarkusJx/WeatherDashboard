@@ -25,7 +25,7 @@ jobs:
       - name: Create Buildx Runner
         run: docker buildx create --platform linux/amd64,linux/arm64 --use
       - name: Docker build
-      run: docker buildx build -t ghcr.io/markusjx/weather_dashboard/native:latest --platform linux/amd64 --pull --push -f Dockerfile.native .
+        run: docker buildx build -t ghcr.io/markusjx/weather_dashboard/native:latest --platform linux/amd64 --pull --push -f Dockerfile.native .
         #run: docker buildx build -t ghcr.io/markusjx/weather_dashboard/native:latest --platform linux/amd64,linux/arm64 --pull --push -f Dockerfile.native .
 
   build-jvm:
