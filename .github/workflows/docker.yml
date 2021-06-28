@@ -39,6 +39,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
+        if: matrix.platform != 'linux/amd64'
       - name: Docker Setup Buildx
         uses: docker/setup-buildx-action@v1.3.0
       - name: Login to GitHub Container Registry
@@ -50,11 +51,11 @@ jobs:
       - name: Create Buildx Runner
         run: docker buildx create --platform ${{matrix.platform}} --use
       - name: Docker build amd64
-        run: docker buildx build -t ghcr.io/markusjx/weather_dashboard/jvm:latest --platform ${{matrix.platform}} --pull --push -f Dockerfile.jvm-amd64 .
+        run: docker buildx build -t ghcr.io/markusjx/weather_dashboard/jvm-amd64:latest --platform ${{matrix.platform}} --pull --push -f Dockerfile.jvm-amd64 .
         if: matrix.platform == 'linux/amd64'
       - name: Docker build arm64
-        run: docker buildx build -t ghcr.io/markusjx/weather_dashboard/jvm:latest --platform ${{matrix.platform}} --pull --push -f Dockerfile.jvm-arm64 .
+        run: docker buildx build -t ghcr.io/markusjx/weather_dashboard/jvm-arm64:latest --platform ${{matrix.platform}} --pull --push -f Dockerfile.jvm-arm64 .
         if: matrix.platform == 'linux/arm64'
       - name: Docker build arm32
-        run: docker buildx build -t ghcr.io/markusjx/weather_dashboard/jvm:latest --platform ${{matrix.platform}} --pull --push -f Dockerfile.jvm-arm32 .
+        run: docker buildx build -t ghcr.io/markusjx/weather_dashboard/jvm-arm32:latest --platform ${{matrix.platform}} --pull --push -f Dockerfile.jvm-arm32 .
         if: matrix.platform == 'linux/arm/v7'
