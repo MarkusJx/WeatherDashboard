@@ -1,19 +1,20 @@
 # Build the react frontend
-FROM arm64v8/node:14-buster AS build-react
+FROM node:14-buster AS build-react
 COPY . /usr/src/app
 WORKDIR /usr/src/app/web
 RUN npm install
 RUN npm run build
 
 # Build the jar
-FROM arm64v8/adoptopenjdk:11-hotspot-focal AS build-java
+FROM adoptopenjdk/openjdk11:debianslim AS build-java
 COPY --from=build-react /usr/src/app /usr/src/app
 WORKDIR /usr/src/app
 RUN chmod +x gradlew
 RUN ./gradlew -b /usr/src/app/build.gradle clean build
 
-FROM arm64v8/adoptopenjdk:11-hotspot-focal
-WORKDIR /work/
+# Create the actual runner
+FROM adoptopenjdk/openjdk11:debianslim-jre
+WORKDIR /work
 COPY --from=build-java /usr/src/app/build/quarkus-app /work
 RUN chmod 775 /work
 EXPOSE 8080
