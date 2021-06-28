@@ -1,5 +1,5 @@
 # Build the react frontend
-FROM node:14-buster AS build-react
+FROM arm64v8/node:14-buster AS build-react
 COPY . /usr/src/app
 WORKDIR /usr/src/app/web
 RUN npm install
