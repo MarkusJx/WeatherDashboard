@@ -2,6 +2,8 @@
 FROM arm64v8/node:14-buster AS build-react
 COPY . /usr/src/app
 WORKDIR /usr/src/app/web
+USER root
+RUN apt-get install -y build-essential
 RUN npm install
 RUN npm run build
 
