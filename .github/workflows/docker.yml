@@ -54,8 +54,9 @@ jobs:
         run: npm install
         working-directory: web
       - name: Build frontend
-        run: npm run build
-        working-directory: web
+        run: |
+          cd web
+          npm run build
       - name: Build gradle project
         run: |
           chmod +x gradlew
