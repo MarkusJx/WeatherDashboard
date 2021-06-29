@@ -63,7 +63,9 @@ jobs:
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v2.2.4
         with:
-          path: .
+          path: |
+            build
+            src
       - name: Create Buildx Runner
         run: docker buildx create --platform linux/amd64,linux/arm64,linux/arm/v7 --use
       - name: Docker build
