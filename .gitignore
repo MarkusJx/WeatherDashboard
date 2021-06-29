@@ -2,8 +2,8 @@
 .gradle/
 build/
 node
-src/main/resources/META-INF/resources
-!src/main/resources/META-INF/resources/robots.txt
+#src/main/resources/META-INF/resources
+#!src/main/resources/META-INF/resources/robots.txt
 
 # Eclipse
 .project
