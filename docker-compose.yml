@@ -5,8 +5,6 @@ services:
     image: mariadb:latest
     container_name: mariadb_weather
     hostname: sqlserver
-    ports:
-      - "3306:3306"
     environment:
       MYSQL_USER: weather
       MYSQL_PASSWORD: weather
@@ -21,7 +19,7 @@ services:
       - mariadb-weather-data:/var/lib/mysql
 
   webserver:
-    build: .
+    image: ghcr.io/markusjx/weather_dashboard/jvm:latest
     depends_on:
       mariadb:
         condition: service_healthy

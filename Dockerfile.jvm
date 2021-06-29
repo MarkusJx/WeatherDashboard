@@ -2,6 +2,7 @@
 FROM node:14-buster AS build-react
 COPY . /usr/src/app
 WORKDIR /usr/src/app/web
+USER root
 RUN npm install
 RUN npm run build
 
@@ -9,6 +10,7 @@ RUN npm run build
 FROM adoptopenjdk/openjdk11:debianslim AS build-java
 COPY --from=build-react /usr/src/app /usr/src/app
 WORKDIR /usr/src/app
+USER root
 RUN chmod +x gradlew
 RUN ./gradlew -b /usr/src/app/build.gradle clean build
 
