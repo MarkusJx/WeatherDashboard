@@ -1,8 +1,3 @@
-!build/*-runner
-!build/*-runner.jar
-!build/lib/*
-!build/quarkus-app/*
-build
 web/node_modules
 web/build
 node
