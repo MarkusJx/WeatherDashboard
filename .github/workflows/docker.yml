@@ -30,6 +30,10 @@ jobs:
       - name: Build frontend
         run: npm run build
         working-directory: web
+      - name: Copy frontend files
+        run: |
+          mkdir -p src/main/resources/META-INF/resources
+          cp -rf web/build/* src/main/resources/META-INF/resources
       - name: Create Buildx Runner
         run: docker buildx create --platform linux/amd64,linux/arm64 --use
       - name: Docker build
@@ -64,12 +68,6 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew build
-      - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v2.2.4
-        with:
-          path: |
-            build
-            src
       - name: Create Buildx Runner
         run: docker buildx create --platform linux/amd64,linux/arm64,linux/arm/v7 --use
       - name: Docker build
