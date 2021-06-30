@@ -1,7 +1,6 @@
 web/node_modules
 web/build
 node
-#!src/main/resources/META-INF/resources
 *.pem
 *.key
 *.crt
