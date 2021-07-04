@@ -30,3 +30,9 @@ openssl rsa -in jwtPrivateKey.pem -pubout > jwtPublicKey.pem
 docker-compose up
 ```
 * The server is now available at ``http://0.0.0.0`` and ``https://0.0.0.0`` (if ssl is enabled)
+
+## Setup using the setup script (debian-based distros only)
+Just run
+```shell
+curl -sSL "https://git.io/JcVeL" > /tmp/weather.sh && sudo bash /tmp/weather.sh
+```
