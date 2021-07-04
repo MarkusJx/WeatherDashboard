@@ -2,8 +2,9 @@
     text-align: center;
     display: grid;
     grid-auto-rows: max-content;
-    width: min-content;
+    width: 80%;
     margin: 0 auto;
+    max-width: 90%;
 
     .heading {
         font-weight: 400;

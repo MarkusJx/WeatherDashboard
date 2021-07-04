@@ -12,3 +12,28 @@
     font-weight: 400;
   }
 }
+
+.data {
+  display: grid;
+
+  .heading {
+    margin: 5px auto;
+    font-weight: 400;
+  }
+
+  .sensor_data {
+    font-size: 1.35em;
+    display: grid;
+    grid-auto-flow: column;
+    width: max-content;
+    margin: 5px auto;
+
+    span {
+      width: max-content;
+    }
+
+    svg {
+      margin: auto;
+    }
+  }
+}

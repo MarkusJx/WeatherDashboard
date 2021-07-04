@@ -27,6 +27,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -77,7 +78,7 @@ public class SensorDataController {
                             schema = @Schema(implementation = ErrorDTO.class)
                     )
             ),
-            @APIResponse(responseCode = "401", description = "The uuid is invalid", content = @Content(
+            @APIResponse(responseCode = "401", description = "The uuid or timestamp is invalid", content = @Content(
                     schema = @Schema(implementation = ErrorDTO.class)
             ))
     })
@@ -97,6 +98,12 @@ public class SensorDataController {
             if (!sensor.get().getUUID().toString().equals(jwt.getClaim("acr"))) {
                 return Response.status(401)
                         .entity(ErrorDTO.from(401, "The uuid is invalid"))
+                        .build();
+            }
+
+            if (dataDTO.timestamp.isAfter(Instant.now().plusSeconds(10))) {
+                return Response.status(401)
+                        .entity(ErrorDTO.from(401, "The timestamp is invalid"))
                         .build();
             }
 

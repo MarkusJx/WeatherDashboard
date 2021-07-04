@@ -31,9 +31,20 @@ checkRoot() {
     fi
 }
 
+checkExit() {
+    if [ $? -ne 0 ]; then
+        echo "$1, exiting"
+        exit 1
+    fi
+}
+
 runApt() {
     if commandExists 'apt-get' ; then
         apt-get $@
+        if [ $? -ne 0 ]; then
+            echo "apt-get failed. Cannot continue."
+            exit 1
+        fi
     else
         echo "apt-get wasn't found. Can't continue."
         exit 1
@@ -74,6 +85,7 @@ checkInstalledSoftware() {
     else
         echo "docker isn't installed, running the install script..."
         curl -fsSL https://get.docker.com | bash
+        checkExit 'The docker install script failed'
     fi
 
     if commandExists 'docker-compose' ; then
@@ -84,6 +96,8 @@ checkInstalledSoftware() {
         updateSoftware
         installSoftware 'python3' 'python3-pip'
         python3 -m pip install docker-compose
+
+        checkExit 'The docker-compose installation failed'
     fi
 }
 
@@ -114,7 +128,9 @@ createDirectory() {
 createJwtCertificates() {
     echo "Generating JSON web token certificates..."
     openssl req -newkey rsa:2048 -new -nodes -keyout jwtPrivateKey.pem -out csr.pem
+    checkExit 'The key generation operation failed'
     openssl rsa -in jwtPrivateKey.pem -pubout > jwtPublicKey.pem
+    checkExit 'The key signing operation failed'
     echo "Done generating certificates."
 }
 
@@ -194,6 +210,7 @@ generateConfig() {
 
     write() {
         printf "%s\n" "$1" >> docker-compose.yml
+        checkExit 'A write operation failed'
     }
 
     write "version: '3.6'"
@@ -244,6 +261,7 @@ generateConfig() {
       printf "QUARKUS_DATASOURCE_USERNAME=%s\n" "$mariadbUser"
       printf "QUARKUS_DATASOURCE_PASSWORD=%s\n" "$mariadbPassword"
     } >> .env
+    checkExit 'A write operation failed'
 
     if question 'Enable ssl support? [y/N]: ' 'n'; then
         sslFile=$(readString 'Enter the certificate file name [ssl.crt]: ' 'ssl.crt')
@@ -253,6 +271,7 @@ generateConfig() {
           printf "QUARKUS_HTTP_SSL_CERTIFICATE_FILE=%s\n" "$sslFile"
           printf "QUARKUS_HTTP_SSL_CERTIFICATE_KEY_FILE=%s\n" "$sslKeyFile"
         } >> .env
+        checkExit 'A write operation failed'
 
         write '      # Key files for ssl support'
         write "      - \"./$sslFile:/work/$sslFile\""
@@ -270,6 +289,21 @@ startContainer() {
     if question 'Start the docker containers? [Y/n]: ' 'y'; then
         echo "Starting the docker containers..."
         docker-compose up
+        retries=0
+        while [ $? -eq 1 ] && [ $retries -lt 10 ]; then
+            echo "'docker-compose up' failed"
+            if question 'Retry? [Y/n]: ' 'y'; then
+                ((retries=retries+1))
+                docker-compose up
+            else
+                exit 1
+            fi
+        done
+
+        if [ $retries -ge 10 ]; then
+            echo "Max amount of retries reached, this shouldn't be happening, exiting"
+            exit 1
+        fi
     fi
 }
 

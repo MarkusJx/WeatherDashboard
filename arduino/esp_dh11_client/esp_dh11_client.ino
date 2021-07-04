@@ -85,6 +85,16 @@ String IpAddress2String(const IPAddress& ipAddress) {
 }
 
 /**
+ * Convert an ip address string to a string
+ *
+ * @param url the url to convert
+ * @return the converted url string
+ */
+String IpAddress2String(const char *url) {
+  return String(url);
+}
+
+/**
  * Get the api connection url
  * 
  * @return the url

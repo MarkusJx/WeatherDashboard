@@ -13,6 +13,7 @@ import GenerateConfig from "./GenerateConfig";
 import Dialogs from "../components/Dialogs";
 
 import styles from "../../styles/webpages/Webpages.module.scss";
+import Sensors from "./sensors/Sensors";
 
 export default function Webpages(): JSX.Element {
     return (
@@ -27,6 +28,7 @@ export default function Webpages(): JSX.Element {
                     <Route path="/addSensor" component={AddSensor}/>
                     <Route path="/viewSensors" component={ViewSensors}/>
                     <Route path="/generateConfig" component={GenerateConfig}/>
+                    <Route path="/sensors" component={Sensors}/>
                     <Route path="/unauthorized" component={Unauthorized}/>
                     <Route component={NotFound}/>
                 </Switch>
